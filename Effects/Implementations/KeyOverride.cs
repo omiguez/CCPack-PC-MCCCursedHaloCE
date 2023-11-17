@@ -1,6 +1,7 @@
 ﻿using ConnectorLib;
 using CrowdControl.Common;
-using CrowdControl.Games.Packs.Effects;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
 using System;
 using System.Threading.Tasks;
 
@@ -119,7 +120,7 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE
                 },
                 refreshInterval: TimeSpan.FromMilliseconds(150),
                 extendOnFail: false,
-                mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable, EffectMutex.Ammo, EffectMutex.Gravity}).WhenCompleted.Then((task) =>
+                mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable, EffectMutex.Ammo, EffectMutex.Gravity }).WhenCompleted.Then((task) =>
                 {
                     Connector.SendMessage($"You hit a pipe.");
                     keyManager.SendAction(GameAction.Jump, true);

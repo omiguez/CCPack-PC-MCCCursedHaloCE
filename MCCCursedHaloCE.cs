@@ -5,7 +5,8 @@ using ConnectorLib;
 using ConnectorLib.Inject.AddressChaining;
 using ConnectorLib.Inject.VersionProfiles;
 using CrowdControl.Common;
-using CrowdControl.Games.Packs.Effects;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
 using System;
 using System.Collections.Generic;
 using CcLog = CrowdControl.Common.Log;
@@ -81,7 +82,7 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE
                 ContiguousIsReadyFailures += 1;
             }
 
-            if (ContiguousIsReadyFailures > MaxRetryFailures && (DateTime.Now - lastSuccessfulIsInGameplayCheck) > maxTimeInQueue)
+            if (ContiguousIsReadyFailures > MaxRetryFailures || (DateTime.Now - lastSuccessfulIsInGameplayCheck) > maxTimeInQueue)
             {
                 ContiguousIsReadyFailures = 0;
                 TryRepairEternalPause();
@@ -138,12 +139,11 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE
         // Returns true if the game is not closed, on a menu, or paused. Returns true on cutscenes.
         private bool IsInGameplay()
         {
-            // Disabling the "ignoring pause check" unless we confirm the new injections are not enough.
-            //if (IgnoreIsInGameplayPolling)
-            //{
-            //    CcLog.Message("Ingoring is-in-gameplay check.");
-            //    return true;
-            //}
+            if (IgnoreIsInGameplayPolling)
+            {
+                CcLog.Message("Ingoring is-in-gameplay check.");
+                return true;
+            }
 
             if (keyManager.InForcedPause)
             {

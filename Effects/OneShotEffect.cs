@@ -1,4 +1,4 @@
-﻿namespace CrowdControl.Games.Packs
+﻿namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects
 {
     public enum OneShotEffect
     {

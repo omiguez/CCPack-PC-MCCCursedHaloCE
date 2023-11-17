@@ -1,5 +1,5 @@
 ﻿using CrowdControl.Common;
-using CrowdControl.Games.Packs.Effects;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using System.Collections.Generic;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE

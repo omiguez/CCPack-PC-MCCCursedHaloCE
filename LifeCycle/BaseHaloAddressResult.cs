@@ -1,4 +1,4 @@
-﻿namespace CrowdControl.Games.Packs.MCCCursedHaloCE
+﻿namespace CrowdControl.Games.Packs.MCCCursedHaloCE.LifeCycle
 {
     // Specifies the result of attempting to recalculate the base halo1.dll memory address.
     public enum BaseHaloAddressResult

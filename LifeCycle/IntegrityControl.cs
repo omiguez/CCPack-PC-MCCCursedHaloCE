@@ -1,5 +1,6 @@
 ﻿using ConnectorLib.Inject.AddressChaining;
 using CrowdControl.Common;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.LifeCycle;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -36,8 +37,8 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE
         private DateTime lastSuccessfulIsInGameplayCheck = DateTime.MinValue;
 
         private int ContiguousIsReadyFailures = 0;
-        private const int MaxRetryFailures = 30;
-        private readonly TimeSpan maxTimeInQueue = TimeSpan.FromSeconds(15);
+        private const int MaxRetryFailures = 40;
+        private readonly TimeSpan maxTimeInQueue = TimeSpan.FromSeconds(60);
 
         // Starts the mechanisms that make sure injections are done and redone if overwritten.
         private void InitIntegrityControl()

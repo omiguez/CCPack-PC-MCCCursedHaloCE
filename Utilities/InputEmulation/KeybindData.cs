@@ -1,6 +1,6 @@
 ﻿using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation
 {
     // Stores data relative to a Keybind.
     public class KeybindData

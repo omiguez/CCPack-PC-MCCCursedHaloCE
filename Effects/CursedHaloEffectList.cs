@@ -4,7 +4,7 @@ using CrowdControl.Common;
 using System;
 using System.Collections.Generic;
 
-namespace CrowdControl.Games.Packs.Effects
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects
 {
     // Lists every effect for the Effect Pack.
     public static class CursedHaloEffectList

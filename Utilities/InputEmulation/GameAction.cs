@@ -1,4 +1,4 @@
-﻿namespace CrowdControl.Games.Packs
+﻿namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation
 {
     // Actions that the player can do in game.
     public enum GameAction

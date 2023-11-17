@@ -1,4 +1,4 @@
-﻿namespace CrowdControl.Games.Packs.Effects
+﻿namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects
 {
     // Mutexes used to avoid overlapping effects from running in parallel and undoing each other.
     public static class EffectMutex
