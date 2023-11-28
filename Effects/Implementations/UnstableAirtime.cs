@@ -1,14 +1,14 @@
 ﻿using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
-
-public partial class MCCCursedHaloCE
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE
 {
-    // While on air, multiplies the player current horizontal speed by a factor, making it get out of control quickly.
-    public void ActivateUnstableAirtime(EffectRequest request)
+    public partial class MCCCursedHaloCE
     {
-        StartTimed(request, () => IsReady(request),
+        // While on air, multiplies the player current horizontal speed by a factor, making it get out of control quickly.
+        public void ActivateUnstableAirtime(EffectRequest request)
+        {
+            StartTimed(request, () => IsReady(request),
                 () =>
                 {
                     Connector.SendMessage($"{request.DisplayViewer} aggressively suggest you stay grounded.");
@@ -20,5 +20,6 @@ public partial class MCCCursedHaloCE
                 Connector.SendMessage($"You can jump safely again.");
                 UndoInjection(UnstableAirtimeId);
             });
+        }
     }
 }
