@@ -1,10 +1,8 @@
 ﻿using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.LifeCycle;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Timers;
 using CcLog = CrowdControl.Common.Log;
