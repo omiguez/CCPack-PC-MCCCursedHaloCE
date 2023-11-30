@@ -1,14 +1,16 @@
 ﻿# Cursed Halo Crowd Control Effect Pack
 
-This is an effect pack for doing Crowd Control on Cursed Halo CE.
+This is an effect pack for doing Crowd Control on Halo CE and Cursed Halo CE.
+The master branch is the pack for Halo CE with the mod Cursed Halo Again. The pack for base halo is on the normalHalo branch.
 
 ## Installation
 Requires: 
 - Master Chief Collection on Steam. If you have it elsewhere, like Game Pass, look into how to install Steam Worshop mods on that version and it should work as well.
 - Cursed Halo Again, available in the Steam Workshop here: https://steamcommunity.com/sharedfiles/filedetails/?id=2962107814
-   - Although many effects still work on the base Halo CE, some other require either parts of the mod, or custom effect scrip bundled with the mod.
+   - Although many effects still work on the base Halo CE, some other require either parts of the mod, or custom effect scrip bundled with the mod. Use the build in the normalHalo branch if you want to play normal Halo CE.
 - And if trying to run it locally, the CrowdControl SDK. https://developer.crowdcontrol.live/sdk/
-   - If not running locally, search Halo in the CrowdControl application.
+   - Copy the contents of this repository on \<folder of the CrowdControl SDK\>/PackProject/HaloCE
+- Then run the Crowd Control SDK, click Load Package Source, select MCCCursedHaloCE.cs, and then click Connect.
 
 ## How it works
 
@@ -26,7 +28,24 @@ Also, every injection is based on the base address of halo1.dll, which is loaded
 - Injections contains all the code that injects assembler. In each injection, the replaced code is copied so that if an update breaks the injections, it is easier to find.
 - Effects contains implementations for specific effects.
 - Utilities contains methods used by all the other code.
-- HaloFiles contains the H1 script code relevant to the effect pack. Note that to modify this i needs to be added on each level of the Cursed Halo source code and rebuild such levels.
+- HaloFiles contains the H1 script code relevant to the effect pack. Note that to modify this it needs to be added on each level of the Cursed Halo source code and rebuild such levels.
+
+## How to compile halo maps
+
+You'll need to have the Cursed Halo Again source. To get it, you'll need to ask InfernoPlus.
+
+1. Download the Halo: CE Mod Tools - MCC on steam, and open its folder (On the steam library, Right click->Manage->Browse local files). You should be on a folder named HCEEK.
+2. Get Invader (https://github.com/SnowyMouse/invader) and copy all the executables on the main HCEEK folder.
+3. Remove the tags and data folders in the HCEEK folder and replace them with the ones from the Cursed Halo Again source.
+4. Copy the contents of HaloFiles/ccHaloModifiedSource in HCEEK, so that the data and tags subfolders merge.
+5. Copy custom_buildEverything.bat (in HaloFiles) to the HCEEK folder.
+6. In data/levels/d20/scripts, cut d20_cinema.hsc and paste it somewhere else.
+7. Open tags/levels/d20.scenario in sapien.exe. Select the Game Window, and press Ctrl+Shift+C to compile the scripts. There should be no errors (text in red).
+8. Copy d20_cinema.hsc back to its original place.
+9. Run custom_buildEverything.bat
+10. All the modified maps should be in the maps folder in HCEEK.
+
+Note that the kart levels are not supported, since they are basically a different game, so just the ones from the Cursed Halo Again you can download from the workshop.
 
 ## Contributing
 
@@ -36,7 +55,7 @@ If you want to update broken injections or add new effects, feel free to create 
 The song used in the Berserker effect is provided by Vertex https://www.youtube.com/watch?v=IX8bAxvUFnc
 The song used in the Sick Beats effect is provided by https://www.youtube.com/watch?v=3z4z7oECbG4
 The Cursed Halo mod, including a big portion of the crowd control H1 scripts, were created by InfernoPlus
-CrowdControl framework is provided by CrowdControl
+CrowdControl framework is provided by CrowdControl ( https://crowdcontrol.live/ )
 
 ## License
 
