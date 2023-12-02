@@ -67,8 +67,9 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE
                 action: () =>
                 {
                     // Keybinds
-                    keyManager.SetAlernativeBindingToOTherActions(GameAction.Melee, GameAction.Fire);
-                    keyManager.DisableAction(GameAction.Fire);
+                    // In Cursed, I no longer disable Fire nor set it to melee since inferno made a fists weapon that usees both.
+                    //keyManager.SetAlernativeBindingToOTherActions(GameAction.Melee, GameAction.Fire);
+                    //keyManager.DisableAction(GameAction.Fire);
                     keyManager.DisableAction(GameAction.ThrowGrenade);
                     keyManager.UpdateGameMemoryKeyState(halo1BaseAddress);
                     BringGameToForeground();
