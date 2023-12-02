@@ -158,7 +158,7 @@ public static class CursedHaloEffectList
         new("Reverse pistol time", "oneshotscripteffect_" + (int)OneShotEffect.ForceReversePistol) { Category = WeaponsAndAmmo, Duration = 5,
             Description = "Forces the player to use the reverse pistol.", Price = (uint) (1500 * PRICINGFACTOR )},
         new("Rapture", "oneshotscripteffect_" + (int)OneShotEffect.Rapture) { Category = OdditiesCategory, Duration = 15,
-            Description = "Heavens call, and all the worthy shall ascend. And then fall to their death.", Price = (uint) (1500 * PRICINGFACTOR /*, ScaleFactor=1.5f, ScaleDecayTime = TimeSpan.FromMinutes(4)*/)},
+            Description = "Heavens call, and all the worthy shall ascend. And then fall to their death.", Price = (uint) (3500 * PRICINGFACTOR /*, ScaleFactor=1.5f, ScaleDecayTime = TimeSpan.FromMinutes(4)*/)},
         new("Grenades: Steal 6 of each", "grenades_take") { Category = WeaponsAndAmmo,
             Description = "Takes 6 grenades away of each type.", Price = (uint) (500 * PRICINGFACTOR )},
         new("Give unsafe checkpoint", "oneshotscripteffect_" + (int)OneShotEffect.GiveUnsafeCheckpoint) { Category = OdditiesCategory,
