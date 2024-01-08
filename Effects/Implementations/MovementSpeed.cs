@@ -1,7 +1,6 @@
 ﻿using CrowdControl.Common;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
 
 public partial class MCCCursedHaloCE
 {
@@ -20,15 +19,15 @@ public partial class MCCCursedHaloCE
     // Sets a factor that multiplies all player movement speed. New speed is previous speed * (1 + speedFactor)
     public void SetPlayerMovementSpeed(EffectRequest request, float speedFactor, string message)
     {
-        StartTimed(request, () => IsReady(request),
-                () =>
-                {
-                    Connector.SendMessage($"{request.DisplayViewer} {message}");
-                    PlayerSpeedFactor = speedFactor;
-                    return InjectSpeedMultiplier();
-                },
-                EffectMutex.PlayerSpeed)
-            .WhenCompleted.Then(_ =>
+        TaskEx.Then(StartTimed(request, () => IsReady(request),
+                    () =>
+                    {
+                        Connector.SendMessage($"{request.DisplayViewer} {message}");
+                        PlayerSpeedFactor = speedFactor;
+                        return InjectSpeedMultiplier();
+                    },
+                    EffectMutex.PlayerSpeed)
+                .WhenCompleted, _ =>
             {
                 Connector.SendMessage($"Player speed back to normal.");
 
@@ -39,7 +38,7 @@ public partial class MCCCursedHaloCE
                 }
                 else
                 {
-                    UndoInjection(SpeedFactorId);
+                    UndoInjection(Injections.MCCCursedHaloCE.SpeedFactorId);
                 }
             });
     }
@@ -47,15 +46,15 @@ public partial class MCCCursedHaloCE
     // Sets a factor that multiplies all NPC movement speed. New speed is previous speed * (1 + speedFactor)
     public void SetNPCMovementSpeed(EffectRequest request, float speedFactor, string message)
     {
-        StartTimed(request, () => IsReady(request),
-                () =>
-                {
-                    Connector.SendMessage($"{request.DisplayViewer} {message}");
-                    OthersSpeedFactor = speedFactor;
-                    return InjectSpeedMultiplier();
-                },
-                EffectMutex.NPCSpeed)
-            .WhenCompleted.Then(_ =>
+        TaskEx.Then(StartTimed(request, () => IsReady(request),
+                    () =>
+                    {
+                        Connector.SendMessage($"{request.DisplayViewer} {message}");
+                        OthersSpeedFactor = speedFactor;
+                        return InjectSpeedMultiplier();
+                    },
+                    EffectMutex.NPCSpeed)
+                .WhenCompleted, _ =>
             {
                 OthersSpeedFactor = 1;
                 if (PlayerSpeedFactor != 1)
@@ -64,7 +63,7 @@ public partial class MCCCursedHaloCE
                 }
                 else
                 {
-                    UndoInjection(SpeedFactorId);
+                    UndoInjection(Injections.MCCCursedHaloCE.SpeedFactorId);
                 }
                 Connector.SendMessage($"NPC speed back to normal.");
             });

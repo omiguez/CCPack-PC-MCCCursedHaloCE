@@ -1,8 +1,7 @@
-﻿using CrowdControl.Common;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
-using System;
+﻿using System;
+using CrowdControl.Common;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
 
 public partial class MCCCursedHaloCE
 {
@@ -20,16 +19,16 @@ public partial class MCCCursedHaloCE
     // Applies a random force to the player. If relative, it is added to the current applied forces instead of replaced.
     public void ApplyForce(float x, float y, float z, bool relative = true)
     {
-        TrySetIndirectFloat(x, basePlayerPointer_ch, XSpeedOffset, relative);
-        TrySetIndirectFloat(y, basePlayerPointer_ch, XSpeedOffset + 4, relative);
-        TrySetIndirectFloat(z, basePlayerPointer_ch, XSpeedOffset + 8, relative);
+        TrySetIndirectFloat(x, basePlayerPointer_ch, Injections.MCCCursedHaloCE.XSpeedOffset, relative);
+        TrySetIndirectFloat(y, basePlayerPointer_ch, Injections.MCCCursedHaloCE.XSpeedOffset + 4, relative);
+        TrySetIndirectFloat(z, basePlayerPointer_ch, Injections.MCCCursedHaloCE.XSpeedOffset + 8, relative);
     }
 
     // Applies a random force to the player of up to forceStrength every specified interval.
     public void ShakePlayer(EffectRequest request, float forceStrength, int intervalInMs, string startMessage, string endMessage)
     {
         bool shake = true; // if true, apply force. If false, remove forces.
-        RepeatAction(request, () => IsReady(request),
+        TaskEx.Then(RepeatAction(request, () => IsReady(request),
             () => Connector.SendMessage($"{request.DisplayViewer} {startMessage}."),
             TimeSpan.FromSeconds(1),
             IsInGameplay,
@@ -51,7 +50,7 @@ public partial class MCCCursedHaloCE
             },
             TimeSpan.FromMilliseconds(intervalInMs), // aprox. once per frame
             false,
-            EffectMutex.ArmorLock).WhenCompleted.Then(_ =>
+            EffectMutex.ArmorLock).WhenCompleted, _ =>
         {
             ApplyForce(0, 0, 0, false);
             Connector.SendMessage(endMessage);

@@ -1,8 +1,7 @@
-﻿using CrowdControl.Common;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using CrowdControl.Common;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
 
 public partial class MCCCursedHaloCE
 {
@@ -22,45 +21,45 @@ public partial class MCCCursedHaloCE
         List<string> mutex = new();
         if (playerFactor != null) { mutex.Add(EffectMutex.PlayerReceivedDamage); }
         if (npcFactor != null || instakillEnemies != null) { mutex.Add(EffectMutex.NPCReceivedDamage); }
-        StartTimed(request,
-                () => { return IsReady(request) && PlayerReceivedDamageFactor == 1 && OthersReceivedDamageFactor == 1 && !InstakillEnemies; },
-                () =>
-                {
-                    if (sound != null)
+        TaskEx.Then(StartTimed(request,
+                    () => { return IsReady(request) && PlayerReceivedDamageFactor == 1 && OthersReceivedDamageFactor == 1 && !InstakillEnemies; },
+                    () =>
                     {
-                        switch (sound)
+                        if (sound != null)
                         {
-                            case OneShotEffect.HealingBullets: QueueOneShotEffect((short)sound, 0); break;
-                            case OneShotEffect.HeavenOrHell: QueueOneShotEffect((short)sound, 0); break;
-                            case OneShotEffect.QuadDamage: QueueOneShotEffect((short)sound, 0); break;
-                            case OneShotEffect.EnemyGodModeS: QueueOneShotEffect((short)sound, 0); break;
-                            case OneShotEffect.GlassCannonS: QueueOneShotEffect((short)sound, 0); break;
-                            case OneShotEffect.NerWarS: QueueOneShotEffect((short)sound, 0); break;
-                            case OneShotEffect.GodModeS: QueueOneShotEffect((short)sound, 0); break;
-                            default: break;
+                            switch (sound)
+                            {
+                                case OneShotEffect.HealingBullets: QueueOneShotEffect((short)sound, 0); break;
+                                case OneShotEffect.HeavenOrHell: QueueOneShotEffect((short)sound, 0); break;
+                                case OneShotEffect.QuadDamage: QueueOneShotEffect((short)sound, 0); break;
+                                case OneShotEffect.EnemyGodModeS: QueueOneShotEffect((short)sound, 0); break;
+                                case OneShotEffect.GlassCannonS: QueueOneShotEffect((short)sound, 0); break;
+                                case OneShotEffect.NerWarS: QueueOneShotEffect((short)sound, 0); break;
+                                case OneShotEffect.GodModeS: QueueOneShotEffect((short)sound, 0); break;
+                                default: break;
+                            }
                         }
-                    }
 
-                    Connector.SendMessage($"{request.DisplayViewer} {startMessage}");
-                    if (playerFactor != null)
-                    {
-                        PlayerReceivedDamageFactor = playerFactor ?? 1;
-                    }
+                        Connector.SendMessage($"{request.DisplayViewer} {startMessage}");
+                        if (playerFactor != null)
+                        {
+                            PlayerReceivedDamageFactor = playerFactor ?? 1;
+                        }
 
-                    if (npcFactor != null)
-                    {
-                        OthersReceivedDamageFactor = npcFactor ?? 1;
-                    }
+                        if (npcFactor != null)
+                        {
+                            OthersReceivedDamageFactor = npcFactor ?? 1;
+                        }
 
-                    if (instakillEnemies != null)
-                    {
-                        InstakillEnemies = instakillEnemies ?? false;
-                    }
+                        if (instakillEnemies != null)
+                        {
+                            InstakillEnemies = instakillEnemies ?? false;
+                        }
 
-                    return InjectConditionalDamageMultiplier();
-                },
-                mutex.ToArray())
-            .WhenCompleted.Then(_ =>
+                        return InjectConditionalDamageMultiplier();
+                    },
+                    mutex.ToArray())
+                .WhenCompleted, _ =>
             {
                 if (playerFactor != null)
                 {
@@ -99,7 +98,7 @@ public partial class MCCCursedHaloCE
                     return;
                 }
 
-                UndoInjection(OnDamageConditionalId);
+                UndoInjection(Injections.MCCCursedHaloCE.OnDamageConditionalId);
             });
     }
 }

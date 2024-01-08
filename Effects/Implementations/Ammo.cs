@@ -1,8 +1,7 @@
-﻿using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
-using System;
+﻿using System;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
 
 public partial class MCCCursedHaloCE
 {

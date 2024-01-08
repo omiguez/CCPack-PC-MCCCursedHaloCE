@@ -1,10 +1,10 @@
-﻿using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
-using System;
+﻿using System;
 using System.Linq;
+using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.ByteArrayBuilding;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Injections;
 
 public partial class MCCCursedHaloCE
 {
@@ -52,7 +52,7 @@ public partial class MCCCursedHaloCE
         (long injectionAddress, byte[] originalBytes) = GetOriginalBytes(valueReadingInstruction_ch, bytesToReplaceLength);
 
         ReplacedBytes.Add((PlayerPointerId, injectionAddress, originalBytes));
-        IntPtr playerPointer = CreateCodeCave(ProcessName, 8); // todo: change the offset to point to the structure start.
+        IntPtr playerPointer = CreateCodeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, 8); // todo: change the offset to point to the structure start.
         CreatedCaves.Add((PlayerPointerId, (long)playerPointer, 8));
         basePlayerPointer_ch = AddressChain.Absolute(Connector, (long)playerPointer);
 
@@ -75,7 +75,7 @@ public partial class MCCCursedHaloCE
         byte[] fullCaveContents = prependedBytes.Concat(originalWithFixedJcc).ToArray();
 
         long cavePointer = CodeCaveInjection(valueReadingInstruction_ch, bytesToReplaceLength, fullCaveContents);
-        CreatedCaves.Add((PlayerPointerId, cavePointer, StandardCaveSizeBytes));
+        CreatedCaves.Add((PlayerPointerId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
 
         CcLog.Message("Player base injection finished.---------------------------");
     }

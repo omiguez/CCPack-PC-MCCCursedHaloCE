@@ -1,9 +1,9 @@
-﻿using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
-using System.Linq;
+﻿using System.Linq;
+using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.ByteArrayBuilding;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Injections;
 
 public partial class MCCCursedHaloCE
 {
@@ -105,7 +105,7 @@ public partial class MCCCursedHaloCE
         CcLog.Message("Injection address: " + injectionAddress.ToString("X"));
 
         long cavePointer = CodeCaveInjection(speedWritingInstr_ch, bytesToReplaceLength, caveBytes);
-        CreatedCaves.Add((SpeedFactorId, cavePointer, StandardCaveSizeBytes));
+        CreatedCaves.Add((SpeedFactorId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
 
         // Set the in place data
         AddressChain dataPointer = AddressChain.Absolute(Connector, cavePointer + caveDataOffset);

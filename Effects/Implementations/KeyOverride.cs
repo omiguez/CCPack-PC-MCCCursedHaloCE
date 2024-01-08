@@ -1,11 +1,10 @@
-﻿using ConnectorLib;
-using CrowdControl.Common;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using ConnectorLib;
+using CrowdControl.Common;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
 
 public partial class MCCCursedHaloCE
 {
@@ -96,7 +95,7 @@ public partial class MCCCursedHaloCE
     public void FlappySpartan(EffectRequest request)
     {
         bool keyUp = true; // Used to alternate events on each frame.
-        RepeatAction(request,
+        TaskEx.Then(RepeatAction(request,
             startCondition: () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
             startAction: () =>
             {
@@ -118,7 +117,7 @@ public partial class MCCCursedHaloCE
             },
             refreshInterval: TimeSpan.FromMilliseconds(150),
             extendOnFail: false,
-            mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable, EffectMutex.Ammo, EffectMutex.Gravity }).WhenCompleted.Then((task) =>
+            mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable, EffectMutex.Ammo, EffectMutex.Gravity }).WhenCompleted, (task) =>
         {
             Connector.SendMessage($"You hit a pipe.");
             keyManager.SendAction(GameAction.Jump, true);
@@ -163,7 +162,7 @@ public partial class MCCCursedHaloCE
     public void ForceGrenades(EffectRequest request)
     {
         bool keyUp = true;
-        RepeatAction(request,
+        TaskEx.Then(RepeatAction(request,
             startCondition: () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
             startAction: () =>
             {
@@ -181,7 +180,7 @@ public partial class MCCCursedHaloCE
             },
             refreshInterval: TimeSpan.FromMilliseconds(33),
             extendOnFail: false,
-            mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable }).WhenCompleted.Then((task) =>
+            mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable }).WhenCompleted, (task) =>
         {
             keyManager.SendAction(GameAction.ThrowGrenade, true);
             Connector.SendMessage($"Enough grenading, soldier!.");
@@ -291,7 +290,7 @@ public partial class MCCCursedHaloCE
     // Template for effects that press, change or disable keys that need to do something every frame.
     private void KeyManipulationPerFrameEffect(EffectRequest request, Func<bool> startAction, Action<Task> endAction, Func<bool> perFrameAction)
     {
-        RepeatAction(request,
+        TaskEx.Then(RepeatAction(request,
             startCondition: () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
             startAction: startAction,
             startRetry: TimeSpan.FromSeconds(1),
@@ -300,14 +299,14 @@ public partial class MCCCursedHaloCE
             refreshAction: perFrameAction,
             refreshInterval: TimeSpan.FromMilliseconds(33),
             extendOnFail: false,
-            mutex: new string[] { EffectMutex.KeyDisable, EffectMutex.KeyPress }).WhenCompleted.Then(endAction);
+            mutex: new string[] { EffectMutex.KeyDisable, EffectMutex.KeyPress }).WhenCompleted, endAction);
     }
 
     // Template for effects that press, change or disable keys that don't do anything else in between start and end.
     private void KeyManipulationEffect(EffectRequest request, Func<bool> startAction, Action<Task> endAction, string[] specialCaseMutex = null)
     {
         string[] mutex = specialCaseMutex != null ? specialCaseMutex : new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable };
-        RepeatAction(request,
+        TaskEx.Then(RepeatAction(request,
             startCondition: () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
             startAction: startAction,
             startRetry: TimeSpan.FromSeconds(1),
@@ -316,7 +315,7 @@ public partial class MCCCursedHaloCE
             refreshAction: () => true,
             refreshInterval: TimeSpan.FromMilliseconds(1000),
             extendOnFail: false,
-            mutex: mutex).WhenCompleted.Then(endAction);
+            mutex: mutex).WhenCompleted, endAction);
     }
 
     // Forces fire and sets time between shots to 0.
@@ -325,7 +324,7 @@ public partial class MCCCursedHaloCE
     public void FullAuto(EffectRequest request, bool unlimitedAmmo)
     {
         bool keyUp = true; // Used to alternate events on each frame.
-        RepeatAction(request,
+        TaskEx.Then(RepeatAction(request,
             startCondition: () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
             startAction: () =>
             {
@@ -368,7 +367,7 @@ public partial class MCCCursedHaloCE
             },
             refreshInterval: TimeSpan.FromMilliseconds(33),
             extendOnFail: false,
-            mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable, EffectMutex.Ammo }).WhenCompleted.Then((task) =>
+            mutex: new string[] { EffectMutex.KeyPress, EffectMutex.KeyDisable, EffectMutex.Ammo }).WhenCompleted, (task) =>
         {
             if (unlimitedAmmo)
             {
@@ -379,7 +378,7 @@ public partial class MCCCursedHaloCE
             keyManager.RestoreAllKeyBinds();
             keyManager.UpdateGameMemoryKeyState(halo1BaseAddress);
             keyManager.ForceShortPause();
-            UndoInjection(FullerAutoId);
+            UndoInjection(Injections.MCCCursedHaloCE.FullerAutoId);
             Connector.SendMessage($"Trigger discipline is now available once more.");
         });
     }

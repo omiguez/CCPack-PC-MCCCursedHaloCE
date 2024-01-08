@@ -1,10 +1,10 @@
-﻿using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
-using System;
+﻿using System;
 using System.Linq;
+using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.ByteArrayBuilding;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Injections;
 
 public partial class MCCCursedHaloCE
 {
@@ -53,7 +53,7 @@ public partial class MCCCursedHaloCE
 
         CcLog.Message("Injection address: " + injectionAddress.ToString("X"));
 
-        IntPtr mapListPointersCave = CreateCodeCave(ProcessName, 16);
+        IntPtr mapListPointersCave = CreateCodeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, 16);
         // First 8 bytes: address written by the injected code to locate the map list
         // Last 8 bytes: address of the next level to load, initially by the CC and updated by the injected code.
         CreatedCaves.Add((LevelSkipperId, (long)mapListPointersCave, 16));
@@ -115,7 +115,7 @@ public partial class MCCCursedHaloCE
             .Concat(GenerateJumpBytes(injectionAddress + bytesToReplaceLength, bytesToReplaceLength)).ToArray();
 
         long cavePointer = CodeCaveInjection(nextLevelReadInstruction_ch, bytesToReplaceLength, fullCaveContents);
-        CreatedCaves.Add((LevelSkipperId, cavePointer, StandardCaveSizeBytes));
+        CreatedCaves.Add((LevelSkipperId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
 
         nextMapOffset_ch = AddressChain.Absolute(Connector, (long)mapListPointersCave).Offset(8);
         CcLog.Message("Level skipper injection finished");

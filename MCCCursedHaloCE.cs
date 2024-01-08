@@ -9,6 +9,7 @@ using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
 using System;
 using System.Collections.Generic;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
 using CcLog = CrowdControl.Common.Log;
 using ConnectorType = CrowdControl.Common.ConnectorType;
 
