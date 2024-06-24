@@ -1,19 +1,21 @@
-﻿using System;
+﻿using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Common;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.LifeCycle;
+using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Timers;
-using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Common;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.LifeCycle;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 // Functionality related to checking and fixing the state in case of changes to the process or game memory.
 public partial class MCCCursedHaloCE
 {
     // Allows us to access the instance form the timer static methods.
-    private static Utilities.MCCCursedHaloCE instance;
+    private static MCCCursedHaloCE instance;
 
     // Base address of halo1.dll in memory. Using relative addresses to this is much more reliable than absolute addresses.
     private AddressChain halo1BaseAddress_ch;
@@ -49,7 +51,7 @@ public partial class MCCCursedHaloCE
             injectionCheckerTimer = null;
         }
 
-        if (!Utilities.MCCCursedHaloCE.DONT_OVERWRITE)
+        if (!DONT_OVERWRITE)
         {
             CreatePeriodicStateChecker();
         }
@@ -84,7 +86,7 @@ public partial class MCCCursedHaloCE
             return true;
         }
 
-        var scriptVarReadingInstruction_ch = AddressChain.Absolute(Connector, halo1BaseAddress + Injections.MCCCursedHaloCE.ScriptInjectionOffset);
+        var scriptVarReadingInstruction_ch = AddressChain.Absolute(Connector, halo1BaseAddress + ScriptInjectionOffset);
 
         // original instruction is 0x48, 0x63, 0x42, 0x34, // movsxd  rax,dword ptr [rdx+34]
         // if it is there, the code has been reset and needs to be reinjected. We assume that if one injection was reset, all were.
@@ -139,17 +141,17 @@ public partial class MCCCursedHaloCE
         if (disableEffectQueue)
         {
             CcLog.Message("Disabling H1 one-shot effect queue reading.");
-            Effects.Implementations.MCCCursedHaloCE.oneShotEffectSpacingTimer.Enabled = false;
+            oneShotEffectSpacingTimer.Enabled = false;
         }
 
         CcLog.Message("Restoring memory and freeing caves.");
 
-        foreach (var code in Enumerable.Select<(string Identifier, long Address, byte[] originalBytes), string>(ReplacedBytes, x => x.Identifier).Distinct())
+        foreach (var code in ReplacedBytes.Select(x => x.Identifier).Distinct())
         {
             UndoInjection(code);
         }
         // This second loop should be redundant, but just in case there's a cave not related to a replacement.
-        foreach (var code in Enumerable.Select<(string Identifier, long Address, int caveSize), string>(CreatedCaves, x => x.Identifier).Distinct())
+        foreach (var code in CreatedCaves.Select(x => x.Identifier).Distinct())
         {
             UndoInjection(code);
         }
@@ -192,9 +194,9 @@ public partial class MCCCursedHaloCE
 
             instance.IsProcessReady = true;
             instance.currentlyInGameplay = instance.IsInGameplayCheck();
-            if (Effects.Implementations.MCCCursedHaloCE.oneShotEffectSpacingTimer != null)
+            if (oneShotEffectSpacingTimer != null)
             {
-                Effects.Implementations.MCCCursedHaloCE.oneShotEffectSpacingTimer.Enabled = true;
+                oneShotEffectSpacingTimer.Enabled = true;
             }
         }
         finally
@@ -218,7 +220,7 @@ public partial class MCCCursedHaloCE
                 : $"Current process instance with ID {instance.mccProcess.Id} has exited.");
             CcLog.Message("Looking for new process.");
 
-            var newMccProcess = Process.GetProcessesByName(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName).Where(p => !p.HasExited).FirstOrDefault();
+            var newMccProcess = Process.GetProcessesByName(ProcessName).Where(p => !p.HasExited).FirstOrDefault();
             if (newMccProcess == null)
             {
                 CcLog.Message("New process not yet found.");

@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
+using System;
 using System.Linq;
-using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.ByteArrayBuilding;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Injections;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE
 {
@@ -92,7 +92,7 @@ public partial class MCCCursedHaloCE
         // this is the previous instruction, so we can inject the jump without having to avoid overwriting a Jcc.
         var onDamageHealthSubstractionInstr_ch = AddressChain.Absolute(Connector, halo1BaseAddress + instructionOffset);
 
-        IntPtr unitStructurePointerPointer = CreateCodeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, 8); // todo: change the offset to point to the structure start.
+        IntPtr unitStructurePointerPointer = CreateCodeCave(ProcessName, 8); // todo: change the offset to point to the structure start.
         CreatedCaves.Add((OnDamageConditionalId, (long)unitStructurePointerPointer, 8));
 
         (long injectionAddress, byte[] originalBytes) = GetOriginalBytes(onDamageHealthSubstractionInstr_ch, bytesToReplaceLength);
@@ -128,7 +128,7 @@ public partial class MCCCursedHaloCE
         CcLog.Message("Injection address: " + injectionAddress.ToString("X"));
 
         long cavePointer = CodeCaveInjection(onDamageHealthSubstractionInstr_ch, bytesToReplaceLength, caveBytes);
-        CreatedCaves.Add((OnDamageConditionalId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
+        CreatedCaves.Add((OnDamageConditionalId, cavePointer, StandardCaveSizeBytes));
 
         // Set the in place data
         AddressChain dataPointer = AddressChain.Absolute(Connector, cavePointer + caveDataOffset);

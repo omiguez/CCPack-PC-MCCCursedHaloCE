@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
+using System;
 using System.Linq;
-using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.ByteArrayBuilding;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Injections;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE
 {
@@ -86,7 +86,7 @@ public partial class MCCCursedHaloCE
             .Concat(GenerateJumpBytes(injectionAddress + bytesToReplaceLength, bytesToReplaceLength)).ToArray();
 
         long cavePointer1 = CodeCaveInjection(onlyRunOnGameplayInstruction_ch, bytesToReplaceLength, fullCave1Contents);
-        CreatedCaves.Add((IsInGameplayPollingId, cavePointer1, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
+        CreatedCaves.Add((IsInGameplayPollingId, cavePointer1, StandardCaveSizeBytes));
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public partial class MCCCursedHaloCE
         UndoInjection(IsInGameplayPollingId);
         CcLog.Message("Injecting polling to know if we are in gameplay.---------------------------");
 
-        IntPtr isInGameplayPollPointer = CreateCodeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, 8);
+        IntPtr isInGameplayPollPointer = CreateCodeCave(ProcessName, 8);
         CreatedCaves.Add((IsInGameplayPollingId, (long)isInGameplayPollPointer, 8));
         CcLog.Message("Polling var pointer: " + ((long)isInGameplayPollPointer).ToString("X"));
         isInGameplayPollingPointer = AddressChain.Absolute(Connector, (long)isInGameplayPollPointer);

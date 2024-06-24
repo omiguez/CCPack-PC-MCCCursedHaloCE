@@ -1,8 +1,8 @@
-﻿using System;
-using ConnectorLib.Inject.AddressChaining;
+﻿using ConnectorLib.Inject.AddressChaining;
+using System;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE
 {     

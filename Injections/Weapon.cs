@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
+using System;
 using System.Linq;
-using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.ByteArrayBuilding;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Injections;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public enum CurrentWeaponType
 {
@@ -41,7 +41,7 @@ public partial class MCCCursedHaloCE
         UndoInjection(FullerAutoId);
         CcLog.Message($"Injecting clip ammo pointer readers.---------------------------");
 
-        IntPtr clipPointer = CreateCodeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, 24);
+        IntPtr clipPointer = CreateCodeCave(ProcessName, 24);
         CreatedCaves.Add((ClipPointerId, (long)clipPointer, 24));
         short fullChargeValueOffset = 16;
         WeaponClipAmmoPointer_ch = AddressChain.Absolute(Connector, (long)clipPointer);
@@ -99,7 +99,7 @@ public partial class MCCCursedHaloCE
         byte[] fullCaveBytes = replacementBytes.Concat(GenerateJumpBytes(injectionAddress + bytesToReplaceLength, bytesToReplaceLength)).ToArray();
 
         long cavePointer = CodeCaveInjection(shotDelayWritingInstruction_ch, bytesToReplaceLength, fullCaveBytes);
-        CreatedCaves.Add((FullerAutoId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
+        CreatedCaves.Add((FullerAutoId, cavePointer, StandardCaveSizeBytes));
     }
 
     // Makes weapon charge (as in charged shots, or battery rifle speed ramp up) be set to max on the first tick.
@@ -137,7 +137,7 @@ public partial class MCCCursedHaloCE
         byte[] fullCaveBytes = replacementBytes.Concat(originalBytes).Concat(GenerateJumpBytes(injectionAddress + bytesToReplaceLength, bytesToReplaceLength)).ToArray();
 
         long cavePointer = CodeCaveInjection(setChargeInstruction_ch, bytesToReplaceLength, fullCaveBytes);
-        CreatedCaves.Add((FullerAutoId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
+        CreatedCaves.Add((FullerAutoId, cavePointer, StandardCaveSizeBytes));
         CcLog.Message("Instant charge injected----");
     }
 
@@ -190,7 +190,7 @@ public partial class MCCCursedHaloCE
         byte[] fullCaveContents = prependedBytes.Concat(modifiedOriginals).Concat(GenerateJumpBytes(injectionAddress + bytesToReplaceLength, bytesToReplaceLength)).ToArray();
 
         long cavePointer = CodeCaveInjection(nearSetReloadingFlagInstruction_ch, bytesToReplaceLength, fullCaveContents);
-        CreatedCaves.Add((FullerAutoId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
+        CreatedCaves.Add((FullerAutoId, cavePointer, StandardCaveSizeBytes));
     }
 
     // Injects code that writes the currently held weapon's clip ammo address.
@@ -251,6 +251,6 @@ public partial class MCCCursedHaloCE
             .ToArray();
 
         long cavePointer = CodeCaveInjection(clipReadingInstruction_ch, bytesToReplaceLength, fullCaveContents);
-        CreatedCaves.Add((ClipPointerId, cavePointer, Utilities.MCCCursedHaloCE.StandardCaveSizeBytes));
+        CreatedCaves.Add((ClipPointerId, cavePointer, StandardCaveSizeBytes));
     }
 }

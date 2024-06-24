@@ -1,10 +1,11 @@
-﻿using System;
+﻿using CrowdControl.Common;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using CrowdControl.Common;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects.Implementations;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE
 {
@@ -85,7 +86,7 @@ public partial class MCCCursedHaloCE
                 return true;
             },
             mutex: new string[] { EffectMutex.PlayerSpeed, EffectMutex.PlayerReceivedDamage, EffectMutex.Ammo, EffectMutex.KeyDisable, EffectMutex.KeyPress });
-        TaskEx.Then(act.WhenCompleted, _ =>
+        act.WhenCompleted.Then(_ =>
         {
             // Keybinds
             keyManager.RestoreAllKeyBinds();

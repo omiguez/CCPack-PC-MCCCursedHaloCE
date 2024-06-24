@@ -1,13 +1,14 @@
-﻿using System;
+﻿using ConnectorLib.Exceptions;
+using ConnectorLib.Inject.AddressChaining;
+using CrowdControl.Common;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using ConnectorLib.Exceptions;
-using ConnectorLib.Inject.AddressChaining;
-using CrowdControl.Common;
+using System.Text;
 using CcLog = CrowdControl.Common.Log;
 
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities;
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE
 {
@@ -58,7 +59,7 @@ public partial class MCCCursedHaloCE
             {
                 CcLog.Debug("Removing cave");
                 AddressChain.Absolute(Connector, caveAddress).SetBytes(Enumerable.Repeat((byte)0x00, size).ToArray());
-                FreeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, new IntPtr(caveAddress), size);
+                FreeCave(ProcessName, new IntPtr(caveAddress), size);
             }
             catch
             {
@@ -112,7 +113,7 @@ public partial class MCCCursedHaloCE
             throw new Exception("Cave bytes are longer than standard allocation.");
         }
 
-        IntPtr cavePointer = CreateCodeCave(Packs.MCCCursedHaloCE.MCCCursedHaloCE.ProcessName, StandardCaveSizeBytes);
+        IntPtr cavePointer = CreateCodeCave(ProcessName, StandardCaveSizeBytes);
 
         CcLog.Message("Cave location: " + ((long)cavePointer).ToString("X"));
 
@@ -142,7 +143,7 @@ public partial class MCCCursedHaloCE
 
         // https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
         // PROCESS_VM_OPERATION, PROCESS_VM_WRITE
-        var hndProc = Packs.MCCCursedHaloCE.MCCCursedHaloCE.OpenProcess(0x0008 | 0x0020, 1, proc.Id);
+        var hndProc = OpenProcess(0x0008 | 0x0020, 1, proc.Id);
 
         // https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
         // Allocation type: MEM_COMMIT | MEM_RESERVE.
@@ -150,7 +151,7 @@ public partial class MCCCursedHaloCE
         IntPtr caveAddress;
         try
         {
-            caveAddress = Packs.MCCCursedHaloCE.MCCCursedHaloCE.VirtualAllocEx(hndProc, (IntPtr)null, cavesize, 0x1000 | 0x2000, 0x40);
+            caveAddress = VirtualAllocEx(hndProc, (IntPtr)null, cavesize, 0x1000 | 0x2000, 0x40);
         }
         catch (Exception ex)
         {
@@ -159,7 +160,7 @@ public partial class MCCCursedHaloCE
         }
         finally
         {
-            Packs.MCCCursedHaloCE.MCCCursedHaloCE.CloseHandle(hndProc);
+            CloseHandle(hndProc);
         }
 
         return caveAddress;
@@ -170,9 +171,9 @@ public partial class MCCCursedHaloCE
     {
         var proc = Process.GetProcessesByName(process)[0];
 
-        var hndProc = Packs.MCCCursedHaloCE.MCCCursedHaloCE.OpenProcess(0x0008 | 0x0020, 1, proc.Id);
+        var hndProc = OpenProcess(0x0008 | 0x0020, 1, proc.Id);
 
-        return Packs.MCCCursedHaloCE.MCCCursedHaloCE.WriteProcessMemory(hndProc, caveAddress, code, code.Length, 0);
+        return WriteProcessMemory(hndProc, caveAddress, code, code.Length, 0);
     }
 
     // Frees the memory used by a cave.
@@ -180,9 +181,9 @@ public partial class MCCCursedHaloCE
     {
         var proc = Process.GetProcessesByName(process)[0];
 
-        var hndProc = Packs.MCCCursedHaloCE.MCCCursedHaloCE.OpenProcess(0x0008, 1, proc.Id);
+        var hndProc = OpenProcess(0x0008, 1, proc.Id);
 
-        var rel = Packs.MCCCursedHaloCE.MCCCursedHaloCE.VirtualFreeEx(hndProc, caveAddress, sizeInBytes, 0x00008000); // MEM_RELEASE
+        var rel = VirtualFreeEx(hndProc, caveAddress, sizeInBytes, 0x00008000); // MEM_RELEASE
 
         if (rel) { return 1; } else { return 0; } // return 1 if succeeds, 0 if fails.
     }
