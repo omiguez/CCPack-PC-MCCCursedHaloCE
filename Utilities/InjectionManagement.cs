@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ConnectorLib;
 using CcLog = CrowdControl.Common.Log;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
@@ -143,7 +144,7 @@ public partial class MCCCursedHaloCE
 
         // https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
         // PROCESS_VM_OPERATION, PROCESS_VM_WRITE
-        var hndProc = OpenProcess(0x0008 | 0x0020, 1, proc.Id);
+        var hndProc = NativeMethods.OpenProcess(0x0008 | 0x0020, true, proc.Id);
 
         // https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
         // Allocation type: MEM_COMMIT | MEM_RESERVE.
@@ -151,7 +152,7 @@ public partial class MCCCursedHaloCE
         IntPtr caveAddress;
         try
         {
-            caveAddress = VirtualAllocEx(hndProc, (IntPtr)null, cavesize, 0x1000 | 0x2000, 0x40);
+            caveAddress = NativeMethods.VirtualAllocEx(hndProc, (IntPtr)null, (uint)cavesize, (NativeMethods.AllocationTypeEnum)(0x1000 | 0x2000), (NativeMethods.MemoryProtectionEnum)0x40);
         }
         catch (Exception ex)
         {
@@ -160,20 +161,20 @@ public partial class MCCCursedHaloCE
         }
         finally
         {
-            CloseHandle(hndProc);
+            NativeMethods.CloseHandle(hndProc);
         }
 
         return caveAddress;
     }
 
     // Writes data to a cave.
-    private int WriteToCave(string process, IntPtr caveAddress, byte[] code)
+    private bool WriteToCave(string process, IntPtr caveAddress, byte[] code)
     {
         var proc = Process.GetProcessesByName(process)[0];
 
-        var hndProc = OpenProcess(0x0008 | 0x0020, 1, proc.Id);
+        var hndProc = NativeMethods.OpenProcess(0x0008 | 0x0020, true, proc.Id);
 
-        return WriteProcessMemory(hndProc, caveAddress, code, code.Length, 0);
+        return NativeMethods.WriteProcessMemory(hndProc, caveAddress, code, code.Length, out int _);
     }
 
     // Frees the memory used by a cave.
@@ -181,9 +182,9 @@ public partial class MCCCursedHaloCE
     {
         var proc = Process.GetProcessesByName(process)[0];
 
-        var hndProc = OpenProcess(0x0008, 1, proc.Id);
+        var hndProc = NativeMethods.OpenProcess((NativeMethods.ProcessAccessFlagsEnum)0x0008, true, proc.Id);
 
-        var rel = VirtualFreeEx(hndProc, caveAddress, sizeInBytes, 0x00008000); // MEM_RELEASE
+        var rel = NativeMethods.VirtualFreeEx(hndProc, caveAddress, sizeInBytes, (NativeMethods.AllocationTypeEnum)0x00008000); // MEM_RELEASE
 
         if (rel) { return 1; } else { return 0; } // return 1 if succeeds, 0 if fails.
     }

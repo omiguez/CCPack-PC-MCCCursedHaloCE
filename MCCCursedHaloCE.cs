@@ -9,6 +9,7 @@ using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using CcLog = CrowdControl.Common.Log;
 using ConnectorType = CrowdControl.Common.ConnectorType;
 
@@ -17,6 +18,10 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 public partial class MCCCursedHaloCE : InjectEffectPack
 {
     private const string ProcessName = "MCC-Win64-Shipping";
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
 
     // Makes the game take focus.
     private void BringGameToForeground()
