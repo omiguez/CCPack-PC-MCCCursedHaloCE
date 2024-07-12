@@ -21,7 +21,7 @@ public partial class MCCCursedHaloCE
         {
             CcLog.Message("Map offset pointer is null"); return false;
         }
-        if (!nextMapOffset_ch.TryGetLong(out _))
+        if (!nextMapOffset_ch.TryGetLong(out long _))
         {
             CcLog.Message("Map offset pointer can't be accessed."); return false;
         }
