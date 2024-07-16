@@ -105,7 +105,19 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             return false;
         }
 
-        var code = FinalCode(request).Split('_');
+        var code = new string[1] { "" };
+        try
+        {
+            code = FinalCode(request).Split('_');
+        }
+        catch (NullReferenceException)
+        {
+            CcLog.Debug("NullReferenceException on call to FinalCode");
+        }
+        catch (KeyNotFoundException)
+        {
+            CcLog.Debug("KeyNotFoundException on call ot FinalCode. Likely a __CC_EMPTY key");
+        }
 
         if (code[0] == "oneshotscripteffect" && !VerifyIndirectPointerIsReady(scriptVarInstantEffectsPointerPointer_ch))
         {
