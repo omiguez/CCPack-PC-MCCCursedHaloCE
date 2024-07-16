@@ -14,10 +14,10 @@ public partial class MCCCursedHaloCE
     // Using two to have redundancy on some edge cases where one is not running.
     private const long IsInGameplayPollInjectionOffset1 = 0xBB331D;
 
-    private const long IsInGameplayPollInjectionOffset2 = 0xAD1EA1;
+    private const long IsInGameplayPollInjectionOffset2 = 0xAD1EA9;
     private const long IsInGameplayPollInjectionOffset3 = 0xB9D425; // reads the shield value two instructions after
     private const long IsInGameplayPollInjectionOffset4 = 0xC507F0; // reads the shield value two instructions after
-    private const long IsInGameplayPollInjectionOffset5 = 0xAD1B02; // reads the shield regen variable
+    private const long IsInGameplayPollInjectionOffset5 = 0xAD1B0A; // reads the shield regen variable
     private const long IsInGameplayPollInjectionOffset6 = 0xB9D2F2; // reads the shield regen variable a few instructions after
     private const long IsInGameplayPollInjectionOffset7 = 0xB9D3AA; // reads the shield regen variable a few instructions after
 

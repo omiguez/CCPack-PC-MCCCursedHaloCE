@@ -8,7 +8,7 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE
 {
-    private const long ScriptInjectionOffset = 0xACC0E9;
+    private const long ScriptInjectionOffset = 0xACC0F1;
 
     // Points to where the injected code store the variables we use to communicate with the H1 scripts.
     private AddressChain? scriptVarInstantEffectsPointerPointer_ch = null;
