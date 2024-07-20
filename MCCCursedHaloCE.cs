@@ -78,20 +78,6 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     protected override bool IsReady(EffectRequest? request)
     {
         bool isReady = IsInGameplayAndPointersAreOk(request);
-        if (isReady)
-        {
-            ContiguousIsReadyFailures = 0;
-        }
-        else
-        {
-            ContiguousIsReadyFailures += 1;
-        }
-
-        if (ContiguousIsReadyFailures > MaxRetryFailures || (DateTime.Now - lastSuccessfulIsInGameplayCheck) > maxTimeInQueue)
-        {
-            ContiguousIsReadyFailures = 0;
-            TryRepairEternalPause();
-        }
 
         return isReady;
     }
@@ -153,17 +139,6 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     // Returns true if the game is not closed, on a menu, or paused. Returns true on cutscenes.
     private bool IsInGameplay()
     {
-        if (IgnoreIsInGameplayPolling)
-        {
-            CcLog.Message("Ingoring is-in-gameplay check.");
-            return true;
-        }
-
-        if (keyManager.InForcedPause)
-        {
-            CcLog.Message("Actually in gameplay, it is a forced pause.");
-            return true;
-        }
         return currentlyInGameplay;
     }
 
