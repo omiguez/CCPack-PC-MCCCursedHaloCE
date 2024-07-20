@@ -26,12 +26,12 @@ public partial class MCCCursedHaloCE
             return false;
         }
 
-        if (!scriptVarPauseDetection_ch.TryGetLong(out long value))
+        if(!TryGetIndirectByteArray(scriptVarPauseDetection_ch, offset: 0, byteAmount: 4, out byte[] counterRawBytes))
         {
             CcLog.Message("Could not retrieve the gameplay polling variable.");
-
-            return false;
         }
+
+        int value = BitConverter.ToInt32(counterRawBytes, 0);
 
         if (value == previousGamplayPollingValue)
         {

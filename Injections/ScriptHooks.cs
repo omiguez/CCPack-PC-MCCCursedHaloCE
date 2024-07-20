@@ -92,14 +92,16 @@ public partial class MCCCursedHaloCE
                 0x58, // pop rax
                 0xEB).AppendRelativePointer("popPushedRegistersAndEnd", 0x33) //jmp pop rdx (31)
             .LocalJumpLocation("checkIfScriptVar2").Append(
-                0x81, 0x3A, 0x00, 0x00, 0x00, 0x40, // cmp [rdx], 0x40 00 00 00 ;compare to initial value of var
-                0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x2B) // jne 0x2B to "pop rdx" to avoid storing any variable that isn't our marker
+                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, // NOP to remove the check for a specific var value that I commented out, since this one will be changing constantly, and we need to dely on the landmarks
+                0x90, 0x90)
+                //0x81, 0x3A, 0xCD, 0xAB, 0x34, 0x12, // cmp [rdx], 0x40 00 00 00 ;compare to initial value of var
+                //0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x2B) // jne 0x2B to "pop rdx" to avoid storing any variable that isn't our marker
             .Append(
-                0x48, 0x83, 0xC2, 0x010, // add rdx,010 (8*2)
+                0x48, 0x83, 0xC2, 0x08, // add rdx,08
                 0x81, 0x3A, 0x09, 0xA4, 0x5D, 0x2E,//cmp [rdx],2E5DA409 ; compare to value of right anchor, 777888777
                 0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x1F) //jne (0X1F), to pop prdx
             .Append(
-                0x48, 0x83, 0xEA, 0x18,//sub rdx,18
+                0x48, 0x83, 0xEA, 0x10,//sub rdx,10 (8x2)
                 0x81, 0x3A, 0xB1, 0xD0, 0x5E, 0x07,//cmp [rdx],75ED0B1 L compare to value of left anchor 123654321)
                 0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x13)  //jne 0x13, to pop rdx
             .Append(
