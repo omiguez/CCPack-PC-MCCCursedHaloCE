@@ -3,6 +3,7 @@
 using CrowdControl.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 
@@ -18,6 +19,7 @@ public static class CursedHaloEffectList
     public const string VisibilityAndHudCategory = "Visibility and HUD";
     public const string ControlsOverride = "Controls override";
     public const string Discarded = "Discarded. May not work anymore.";
+    public const string Random = "Random effect.";
 
     private const float PRICINGFACTOR = 0.1f;
     public static EffectList Effects = new List<Effect> {
@@ -32,6 +34,9 @@ public static class CursedHaloEffectList
 //#endif
 
         // New stuff
+        new("Trigger a random effect", "randomeffect") { Category = Random, Duration = 30,
+            Description = "Activate a random CC effect, from the puniest to the harshest. All have the same chances of being selected. Timed ones will last 30 seconds.", Price = (uint)(500 * PRICINGFACTOR)},
+        //-----
         new("Take half of the current weapon ammo", "takeammo_half") {Category = WeaponsAndAmmo,
             Description = "Yoink half of the ammo/battery of the currently held weapon.", Price = (uint) (500 * PRICINGFACTOR /*, ScaleFactor = 1.3f, ScaleDecayTime = TimeSpan.FromMinutes(1)*/)},
         new("Take all of the current weapon ammo", "takeammo_all") {Category = WeaponsAndAmmo,

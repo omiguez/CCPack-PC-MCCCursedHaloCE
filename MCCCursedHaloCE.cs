@@ -142,14 +142,27 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         return currentlyInGameplay;
     }
 
+    private string[] ReplaceWithRandomEffect()
+    {
+        int index = new Random().Next(1, Effects.Count);
+        Effect effect = Effects.Values.Skip(index).First();
+                
+        return effect.ID.Split('_');
+    }
+
     protected override void StartEffect(EffectRequest request)
     {
         CcLog.Message("StartEffect started");
         CcLog.Message(FinalCode(request));
         var code = FinalCode(request).Split('_');
 
-        switch (code[0])
+        while (code[0] == "randomeffect")
         {
+            code = ReplaceWithRandomEffect();
+        }
+
+        switch (code[0])
+        {            
             case "thunderstorm":
             {
                 TryEffect(request, () => IsReady(request),
