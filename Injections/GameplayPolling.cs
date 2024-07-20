@@ -20,6 +20,8 @@ public partial class MCCCursedHaloCE
     /// </summary>
     private bool IsInGameplayCheck()
     {
+        // Note: There's a variable that could be falsely detected as the polling one, since it shares the same landmarks.
+        // But in testing, it was not used by anything, so it should not be a problem. Keep an eye out.
         if (scriptVarPauseDetection_ch == null)
         {
             CcLog.Message("Gameplay polling pointer is null");
