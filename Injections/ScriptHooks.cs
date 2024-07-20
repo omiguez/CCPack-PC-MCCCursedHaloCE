@@ -13,8 +13,8 @@ public partial class MCCCursedHaloCE
     // Points to where the injected code store the variables we use to communicate with the H1 scripts.
     private AddressChain? scriptVarInstantEffectsPointerPointer_ch = null;
 
-    // Note: This points to the first var. Any others will be referred using a multiple of 8 offset on the value pointed by this one.
-    private AddressChain? scriptVarTimedEffectsPointerPointer_ch = null;
+    // Points to a variable that the game scripts are constantly changing. If it has not changed after more than one frame (assuming 30fps), the game is paused, as scripts don't run during pauses or out of the game.
+    private AddressChain? scriptVarPauseDetection_ch = null;
 
     // Continuous script variables use bits in a script variable to be activated. Hence there's a max after which we need to use another variable.
     private const int MaxContinousScriptEffectSlotPerVar = 30;
@@ -24,7 +24,7 @@ public partial class MCCCursedHaloCE
 
     /// <summary>
     /// Inserts code that writes pointers to the scripts variables, <see cref="scriptVarInstantEffectsPointerPointer_ch"/>
-    /// and <see cref="scriptVarTimedEffectsPointerPointer_ch"/>, which allows the effect pack to communicate with the H1 scripts.
+    /// and <see cref="scriptVarPauseDetection_ch"/>, which allows the effect pack to communicate with the H1 scripts.
     /// </summary>
     private void InjectScriptHook()
     {
@@ -60,7 +60,7 @@ public partial class MCCCursedHaloCE
 
         CcLog.Message("Injection address: " + injectionAddress.ToString("X"));
         scriptVarInstantEffectsPointerPointer_ch = AddressChain.Absolute(Connector, (long)scriptVarPointerPointer);
-        scriptVarTimedEffectsPointerPointer_ch = AddressChain.Absolute(Connector, (long)scriptVar2PointerPointer);
+        scriptVarPauseDetection_ch = AddressChain.Absolute(Connector, (long)scriptVar2PointerPointer);
 
         // This script, for each of our script communication variables, hooks to where it is read.
         // The injected code checks if the one read is the script var with its original value, and
