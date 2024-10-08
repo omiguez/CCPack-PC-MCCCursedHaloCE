@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation.User32Imports;
+﻿namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation.User32Imports;
 
 // https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
 [Flags]

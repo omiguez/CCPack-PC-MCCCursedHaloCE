@@ -1,5 +1,4 @@
 ﻿using ConnectorLib.Inject.AddressChaining;
-using System;
 using System.Text;
 using CcLog = CrowdControl.Common.Log;
 

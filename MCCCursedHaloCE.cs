@@ -7,8 +7,6 @@ using ConnectorLib.Inject.VersionProfiles;
 using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CcLog = CrowdControl.Common.Log;
 using ConnectorType = CrowdControl.Common.ConnectorType;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation.User32Imports;
 

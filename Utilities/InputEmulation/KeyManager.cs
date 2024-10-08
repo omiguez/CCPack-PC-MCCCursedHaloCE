@@ -1,11 +1,7 @@
 ﻿using ConnectorLib;
 using ConnectorLib.Inject.AddressChaining;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation.User32Imports;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using CcLog = CrowdControl.Common.Log;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;

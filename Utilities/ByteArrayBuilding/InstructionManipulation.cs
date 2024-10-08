@@ -1,7 +1,4 @@
 ﻿using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilites.ByteArrayBuilding;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
