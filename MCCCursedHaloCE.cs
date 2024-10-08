@@ -31,7 +31,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
     private KeyManager keyManager;
 
-    public override EffectList Effects => CursedHaloEffectList.Effects;
+    public override EffectList Effects { get; } = CursedHaloEffectList.Effects;
 
     public MCCCursedHaloCE(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler)
         : base(player, responseHandler, statusUpdateHandler)
