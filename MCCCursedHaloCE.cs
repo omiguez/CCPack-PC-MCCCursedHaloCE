@@ -130,7 +130,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     private void HandleInvalidRequest(EffectRequest request)
     {
         CcLog.Message($"Invalid request: {FinalCode(request)}");
-        Respond(request, EffectStatus.FailPermanent, "Unknown effect ID: " + FinalCode(request));
+        Respond(request, EffectStatus.FailPermanent, StandardErrors.UnknownEffect, request);
 
     }
 
