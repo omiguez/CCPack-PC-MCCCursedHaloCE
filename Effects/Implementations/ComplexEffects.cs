@@ -1,7 +1,7 @@
-﻿using CrowdControl.Common;
+﻿using System.Diagnostics;
+using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
-using System.Diagnostics;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 

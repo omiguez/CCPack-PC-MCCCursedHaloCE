@@ -1,13 +1,13 @@
 ﻿//ccpragma { "include" : [ "Effects/ContinuousEffect.cs","Effects/OneShotEffect.cs","Effects/Implementations/ComplexEffects.cs","Effects/Implementations/Ammo.cs", "Effects/Implementations/MouseOverride.cs", "Effects/Implementations/KeyOverride.cs", "Effects/Implementations/ReceivedDamage.cs", "Effects/Implementations/H1ScriptEffects.cs", "Effects/Implementations/ApplyForces.cs", "Effects/Implementations/MovementSpeed.cs", "Effects/Implementations/UnstableAirtime.cs", "Effects/Implementations/PlayerPointerBased.cs", "Effects/EffectMutex.cs", "Effects/CursedHaloEffectList.cs", "Utilities/IndirectPointers.cs", "Utilities/InjectionManagement.cs", "LifeCycle/BaseHaloAddressResult.cs", "LifeCycle/IntegrityControl.cs", "Utilities/Debug.cs", "Utilities/ByteArrayBuilding/ByteArrayExtensions.cs", "Utilities/ByteArrayBuilding/InstructionManipulation.cs", "Utilities/InputEmulation/KeyManager.cs", "Utilities/InputEmulation/KeybindData.cs","Utilities/InputEmulation/GameAction.cs", "Utilities/InputEmulation/User32Imports/InputStructs.cs", "Utilities/InputEmulation/User32Imports/MouseEventFlags.cs","Injections/Player.cs", "Injections/DamageModifier.cs", "Injections/ScriptHooks.cs", "Injections/MovementSpeed.cs", "Injections/UnstableAirtime.cs", "Injections/GameplayPolling.cs", "Injections/LevelSkipper.cs", "Injections/Weapon.cs"] }
 #define DEVELOPMENT
 
+using System.Runtime.InteropServices;
 using ConnectorLib;
 using ConnectorLib.Inject.AddressChaining;
 using ConnectorLib.Inject.VersionProfiles;
 using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
-using System.Runtime.InteropServices;
 using CcLog = CrowdControl.Common.Log;
 using ConnectorType = CrowdControl.Common.ConnectorType;
 

@@ -1,7 +1,7 @@
-﻿using CrowdControl.Common;
-using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Timers;
+using CrowdControl.Common;
+using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CcLog = CrowdControl.Common.Log;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
