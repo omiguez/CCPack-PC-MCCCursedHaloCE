@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 using ConnectorLib;
-using ConnectorLib.Inject.AddressChaining;
+using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using ConnectorLib.Inject.VersionProfiles;
 using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;

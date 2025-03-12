@@ -1,4 +1,4 @@
-﻿using ConnectorLib.Inject.AddressChaining;
+﻿using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using CcLog = CrowdControl.Common.Log;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE;

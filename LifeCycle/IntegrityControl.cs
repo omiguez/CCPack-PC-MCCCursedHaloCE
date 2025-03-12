@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Timers;
-using ConnectorLib.Inject.AddressChaining;
+using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.LifeCycle;
 using CcLog = CrowdControl.Common.Log;
 

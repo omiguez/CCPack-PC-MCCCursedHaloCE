@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using ConnectorLib;
-using ConnectorLib.Inject.AddressChaining;
+using ConnectorLib.Memory;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation.User32Imports;
 using CcLog = CrowdControl.Common.Log;
 
@@ -38,15 +38,11 @@ public class KeyManager
         { GameAction.StrafeRight, new KeybindData(19) },
     };
 
-    public ConnectorLib.IPCConnector connector;
+    public IPCConnector connector;
     public HIDConnector hidConnector;
 
     // If true, the game is forcing a pause to update controls. Useful to know prevent an endless loop where the effect gets delayed because it is mid pause.
-    public bool InForcedPause = false;
-
-    public KeyManager()
-    {
-    }
+    public bool InForcedPause;
 
     public static void SendMouseMove(int dx, int dy)
     {
@@ -238,7 +234,7 @@ public class KeyManager
     public void GetKeyBindingsFromGameMemory(long halo1BaseAddress)
     {
         CcLog.Message("Loading key values from game memory.");
-        AddressChain basePointer = AddressChain.Absolute(this.connector, halo1BaseAddress + FirstKeybindOffset);
+        AddressChain<IPCConnector> basePointer = AddressChain<IPCConnector>.Absolute(connector, halo1BaseAddress + FirstKeybindOffset);
         foreach (var kvp in SwappableKeybinds)
         {
             byte keyBind = basePointer.Offset(kvp.Value.memoryOffsetFromJump).GetByte();
@@ -250,7 +246,7 @@ public class KeyManager
 
     public bool ResetAlternativeBindingForAction(GameAction action, long halo1BaseAddress)
     {
-        AddressChain basePointer = AddressChain.Absolute(this.connector, halo1BaseAddress + FirstKeybindOffset);
+        AddressChain<IPCConnector> basePointer = AddressChain<IPCConnector>.Absolute(connector, halo1BaseAddress + FirstKeybindOffset);
 
         if (!basePointer.Offset(SwappableKeybinds[action].memoryOffsetFromJump + 0x4).TrySetByte(0x00))
         {
@@ -265,7 +261,7 @@ public class KeyManager
     {
         try
         {
-            AddressChain basePointer = AddressChain.Absolute(this.connector, halo1BaseAddress + FirstKeybindOffset);
+            AddressChain<IPCConnector> basePointer = AddressChain<IPCConnector>.Absolute(connector, halo1BaseAddress + FirstKeybindOffset);
             int errors = 0;
             foreach (var kvp in SwappableKeybinds)
             {
