@@ -133,8 +133,7 @@ public partial class MCCCursedHaloCE
 
                 return true;
             },
-            true,
-            mutex);
+            mutex: mutex);
     }
 
     public void ApplyContinuousEffect(EffectRequest request, int slot)

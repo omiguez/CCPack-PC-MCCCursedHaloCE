@@ -21,8 +21,7 @@ public partial class MCCCursedHaloCE
         TryEffect(request, () => IsReady(request),
             () => TrySetIndirectFloat(amount, basePlayerPointer_ch, ShieldsOffset, true),
             () => Connector.SendMessage($"{request.DisplayViewer} {messageVerb} your shield"),
-            true,
-            EffectMutex.SetShield);
+            mutex: EffectMutex.SetShield);
     }
 
     public void SetShield(EffectRequest request, float value)
@@ -30,8 +29,7 @@ public partial class MCCCursedHaloCE
         TryEffect(request, () => IsReady(request),
             () => SetShield(value),
             () => Connector.SendMessage($"{request.DisplayViewer} set your shield to {value}."),
-            true,
-            EffectMutex.SetShield);
+            mutex: EffectMutex.SetShield);
     }
 
     public bool SetShield(float value)
@@ -91,8 +89,7 @@ public partial class MCCCursedHaloCE
                 return SetHealth(currentHealth, true);
             },
             () => Connector.SendMessage($"{request.DisplayViewer} {message}"),
-            true,
-            EffectMutex.SetHealth);
+            mutex: EffectMutex.SetHealth);
     }
 
     // Sets health to the given value. 1.0 is full health. 0 health does not kill the player until he receives damage.
@@ -104,8 +101,7 @@ public partial class MCCCursedHaloCE
                 return SetHealth(value, true);
             },
             () => Connector.SendMessage($"{request.DisplayViewer} {message}"),
-            true,
-            EffectMutex.SetHealth);
+            mutex: EffectMutex.SetHealth);
     }
 
     public bool SetHealth(float value, bool soundEffectOnFullHealth)
@@ -176,9 +172,9 @@ public partial class MCCCursedHaloCE
     {
         float previousHealth = 1;
         StartTimed(request,
-            startCondition: () => IsReady(request),
-            continueCondition: () => IsReady(request),
-            continueConditionInterval: TimeSpan.FromMilliseconds(500),
+            () => IsReady(request),
+            () => IsReady(request),
+            TimeSpan.FromMilliseconds(500),
             () =>
             {
                 QueueOneShotEffect((short)OneShotEffect.OneHp, 0);
@@ -236,6 +232,6 @@ public partial class MCCCursedHaloCE
                 return true;
             },
             () => Connector.SendMessage($"{request.DisplayViewer} {message} some grenades."),
-            true, EffectMutex.SetGrenades);
+            mutex: EffectMutex.SetGrenades);
     }
 }

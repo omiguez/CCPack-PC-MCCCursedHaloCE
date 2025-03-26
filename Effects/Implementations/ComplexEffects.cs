@@ -26,17 +26,17 @@ public partial class MCCCursedHaloCE
         int totalDurationInMs = (int)request.Duration.TotalMilliseconds;
         bool flashlightState = false;
         var act = RepeatAction(request,
-            startCondition: () => IsReady(request),
-            startAction: () =>
+            () => IsReady(request),
+            () =>
             {
                 QueueOneShotEffect((short)OneShotEffect.Paranoia_Start, totalDurationInMs);
 
                 return true;
             },
-            startRetry: TimeSpan.FromSeconds(1),
-            refreshCondition: () => IsReady(request),
-            refreshRetry: TimeSpan.FromSeconds(1),
-            refreshAction: () =>
+            TimeSpan.FromSeconds(1),
+            () => IsReady(request),
+            TimeSpan.FromSeconds(1),
+            () =>
             {
                 if (flashlightState == true)
                 {
@@ -51,18 +51,18 @@ public partial class MCCCursedHaloCE
 
                 return true;
             },
-            refreshInterval: TimeSpan.FromMilliseconds(delayBetweenFlashlightToggleInMs),
-            extendOnFail: false,
-            mutex: new string[] { EffectMutex.UI });            
+            TimeSpan.FromMilliseconds(delayBetweenFlashlightToggleInMs),
+            false,
+            new string[] { EffectMutex.UI });            
     }
 
     private void Berserker(EffectRequest request)
     {
         var act = StartTimed(request,
-            startCondition: () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
-            continueCondition: () => IsReady(request),
-            continueConditionInterval: TimeSpan.FromMilliseconds(3000),
-            action: () =>
+            () => IsReady(request) && keyManager.EnsureKeybindsInitialized(halo1BaseAddress),
+            () => IsReady(request),
+            TimeSpan.FromMilliseconds(3000),
+            () =>
             {
                 // Keybinds
                 // In Cursed, I no longer disable Fire nor set it to melee since inferno made a fists weapon that usees both.
@@ -83,7 +83,7 @@ public partial class MCCCursedHaloCE
 
                 return true;
             },
-            mutex: new string[] { EffectMutex.PlayerSpeed, EffectMutex.PlayerReceivedDamage, EffectMutex.Ammo, EffectMutex.KeyDisable, EffectMutex.KeyPress });
+            new string[] { EffectMutex.PlayerSpeed, EffectMutex.PlayerReceivedDamage, EffectMutex.Ammo, EffectMutex.KeyDisable, EffectMutex.KeyPress });
         act.WhenCompleted.Then(_ =>
         {
             // Keybinds

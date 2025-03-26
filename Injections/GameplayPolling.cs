@@ -24,7 +24,7 @@ public partial class MCCCursedHaloCE
             return false;
         }
 
-        if(!TryGetIndirectByteArray(scriptVarPauseDetection_ch, offset: 0, byteAmount: 4, out byte[] counterRawBytes))
+        if(!TryGetIndirectByteArray(scriptVarPauseDetection_ch, 0, 4, out byte[] counterRawBytes))
         {
             CcLog.Message("Could not retrieve the gameplay polling variable.");
         }

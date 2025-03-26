@@ -169,8 +169,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                         Thunderstorm((int)request.Duration.TotalMilliseconds, 10 * 33, 90 * 33, 5 * 33, 90 * 33);
                         Respond(request, EffectStatus.Success);
                         return true;
-                    },
-                    true, null);
+                    });
                 break;
             }
             case "paranoia":
@@ -180,8 +179,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                     {
                         Paranoia(request, 300);
                         return true;
-                    },
-                    true, null);
+                    });
                 break;
             }
             case "takeammo":
@@ -202,7 +200,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                         TakeAwayAmmoFromCurrentWeapon(ammoAmount);
                         return true;
                     },
-                    true, EffectMutex.Ammo);
+                    mutex: EffectMutex.Ammo);
                 break;
             }
             case "fullauto":
@@ -354,8 +352,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                             {
                                 ApplyRandomForce(0.5f, 0.5f, 0.15f);
                                 return true;
-                            },
-                            true, null);
+                            });
                         break;
                     }
                     case "shake": ShakePlayer(request, 0.4f, 35, "is shaking you.", "The shakes are over"); break;
@@ -425,8 +422,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                         QueueOneShotEffect((short)OneShotEffect.SkipLevel, 0); // Slipspace jump.
                         return true;
                     },
-                    true,
-                    EffectMutex.LevelChangeOrRestart);
+                    mutex: EffectMutex.LevelChangeOrRestart);
 
                 break;
             }
