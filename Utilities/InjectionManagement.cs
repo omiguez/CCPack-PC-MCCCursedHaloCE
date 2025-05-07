@@ -147,7 +147,7 @@ public partial class MCCCursedHaloCE
         IntPtr caveAddress;
         try
         {
-            caveAddress = NativeMethods.VirtualAllocEx(hndProc, (IntPtr)null, (uint)cavesize, (NativeMethods.AllocationTypeEnum)(0x1000 | 0x2000), (NativeMethods.MemoryProtectionEnum)0x40);
+            caveAddress = NativeMethods.VirtualAllocEx(hndProc, (IntPtr)null, (uint)cavesize, (NativeMethods.AllocationTypeEnum)(0x1000 | 0x2000), (NativeMethods.AllocationProtectEnum)0x40);
         }
         catch (Exception ex)
         {
