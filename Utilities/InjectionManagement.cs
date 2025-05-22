@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using ConnectorLib;
-using ConnectorLib.Exceptions;
+using ConnectorLib.Inject.Exceptions;
 using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using CcLog = CrowdControl.Common.Log;
 
