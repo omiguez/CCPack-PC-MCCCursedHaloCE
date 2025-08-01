@@ -116,7 +116,7 @@ public partial class MCCCursedHaloCE
 
         string? mutex = slot switch
         {
-            _ => null,
+            _ => Guid.NewGuid().ToString(),
         };
 
         Action additionalStartAction = slot switch
@@ -166,7 +166,7 @@ public partial class MCCCursedHaloCE
             //15 => new string[] { EffectMutex.Gravity },
             //17 => new string[] { EffectMutex.ObjectLightScale },
             //18 => new string[] { EffectMutex.ObjectLightScale },
-            _ => null,
+            _ => [Guid.NewGuid().ToString()],
         };
 
         Action additionalStartAction = effect switch
