@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using ConnectorLib;
+﻿using ConnectorLib;
 using ConnectorLib.Inject.Exceptions;
+using System.Diagnostics;
 using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using CcLog = CrowdControl.Common.Log;
 
@@ -156,7 +156,11 @@ public partial class MCCCursedHaloCE
         }
         finally
         {
-            NativeMethods.CloseHandle(hndProc);
+            var result = NativeMethods.CloseHandle(hndProc);
+            if (!result)
+            {
+                CcLog.Error("Failed to close a process handle");
+            }
         }
 
         return caveAddress;
