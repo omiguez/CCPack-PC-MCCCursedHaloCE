@@ -117,7 +117,7 @@ public partial class MCCCursedHaloCE
                 0x48, 0xA3).AppendNum((long)scriptVar2PointerPointer) // mov [VarPointerPointer], rax
             .Append(
                 0x58, // pop rax
-                0xEB).AppendRelativePointer("popPushedRegistersAndEnd", 0x68) //jmp pop rdx (31)
+                0xEB).AppendRelativePointer("popPushedRegistersAndEnd", 0x33) //jmp pop rdx (31)
             .LocalJumpLocation("checkIfScriptVar3").Append(
                 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, // NOP to remove the check for a specific var value that I commented out, since this one will be changing constantly, and we need to dely on the landmarks
                 0x90, 0x90)
