@@ -1,17 +1,14 @@
-﻿//ccpragma { "include" : [ "Effects/ContinuousEffect.cs","Effects/OneShotEffect.cs","Effects/Implementations/ComplexEffects.cs","Effects/Implementations/Ammo.cs", "Effects/Implementations/MouseOverride.cs", "Effects/Implementations/KeyOverride.cs", "Effects/Implementations/ReceivedDamage.cs", "Effects/Implementations/H1ScriptEffects.cs", "Effects/Implementations/ApplyForces.cs", "Effects/Implementations/MovementSpeed.cs", "Effects/Implementations/UnstableAirtime.cs", "Effects/Implementations/PlayerPointerBased.cs", "Effects/EffectMutex.cs", "Effects/CursedHaloEffectList.cs", "Utilities/IndirectPointers.cs", "Utilities/InjectionManagement.cs", "LifeCycle/BaseHaloAddressResult.cs", "LifeCycle/IntegrityControl.cs", "Utilities/Debug.cs", "Utilities/ByteArrayBuilding/ByteArrayExtensions.cs", "Utilities/ByteArrayBuilding/InstructionManipulation.cs", "Utilities/InputEmulation/KeyManager.cs", "Utilities/InputEmulation/KeybindData.cs","Utilities/InputEmulation/GameAction.cs", "Utilities/InputEmulation/User32Imports/InputStructs.cs", "Utilities/InputEmulation/User32Imports/MouseEventFlags.cs","Injections/Player.cs", "Injections/DamageModifier.cs", "Injections/ScriptHooks.cs", "Injections/MovementSpeed.cs", "Injections/UnstableAirtime.cs", "Injections/GameplayPolling.cs", "Injections/LevelSkipper.cs", "Injections/Weapon.cs"] }
+﻿//ccpragma { "include" : [ "Effects/ContinuousEffect.cs","Effects/OneShotEffect.cs","Effects/Implementations/ComplexEffects.cs","Effects/Implementations/Ammo.cs", "Effects/Implementations/MouseOverride.cs", "Effects/Implementations/KeyOverride.cs", "Effects/Implementations/ReceivedDamage.cs", "Effects/Implementations/H1ScriptEffects.cs", "Effects/Implementations/ApplyForces.cs", "Effects/Implementations/MovementSpeed.cs", "Effects/Implementations/UnstableAirtime.cs", "Effects/Implementations/PlayerPointerBased.cs", "Effects/EffectMutex.cs", "Effects/CursedHaloEffectList.cs", "Utilities/IndirectPointers.cs", "Utilities/InjectionManagement.cs", "LifeCycle/BaseHaloAddressResult.cs", "LifeCycle/IntegrityControl.cs", "Utilities/Debug.cs", "Utilities/ByteArrayBuilding/ByteArrayExtensions.cs", "Utilities/ByteArrayBuilding/InstructionManipulation.cs", "Utilities/InputEmulation/KeyManager.cs", "Utilities/InputEmulation/KeybindData.cs","Utilities/InputEmulation/GameAction.cs", "Utilities/InputEmulation/User32Imports/InputStructs.cs", "Utilities/InputEmulation/User32Imports/MouseEventFlags.cs", "Utilities/RaceProgress.cs", "Utilities/BadToml.cs", "Injections/Player.cs", "Injections/DamageModifier.cs", "Injections/ScriptHooks.cs", "Injections/MovementSpeed.cs", "Injections/UnstableAirtime.cs", "Injections/GameplayPolling.cs", "Injections/LevelSkipper.cs", "Injections/Weapon.cs"] }
 #define DEVELOPMENT
 
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using ConnectorLib;
 using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using ConnectorLib.Inject.VersionProfiles;
 using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
-using Tomlyn;
-using Tomlyn.Model;
 using CcLog = CrowdControl.Common.Log;
 using ConnectorType = CrowdControl.Common.ConnectorType;
 
@@ -482,25 +479,28 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         // If the config file doesn't exist at the default path, ask the user to find it.
         if (!File.Exists(configPath))
         {
-            CcLog.Message($"Error: Configuration file not found at '{Path.GetFullPath(configPath)}'.");
-            configPath = ShowLocateConfigDialog();
 
-            if (string.IsNullOrEmpty(configPath))
-            {
-                CcLog.Message("No configuration file was selected. The application will now exit.");
-                return;
+            while (!File.Exists(configPath)) {
+                CcLog.Message($"Error: Configuration file not found at '{Path.GetFullPath(configPath)}'.");
+                configPath = "%appdata%/CrowdControl-Apps/HaloCE/config.json";
+        
+                if (string.IsNullOrEmpty(configPath))
+                {
+                    Thread.Sleep(5000);
+                    continue;
+                }
+                CcLog.Message($"Successfully loaded config from: {configPath}");
             }
-            CcLog.Message($"Successfully loaded config from: {configPath}");
         }
 
         try
         {
             // Read the TOML file content.
             string tomlContent = File.ReadAllText(configPath);
-            TomlTable tomlTable = Toml.ToModel(tomlContent);
+            BadToml tomlTable = BadToml.Parse(tomlContent);
             
-            string? username = tomlTable["username"] as string;
-            string? password = tomlTable["password"] as string;
+            string username = tomlTable["username"];
+            string password = tomlTable["password"];
             
             // Check if deserialization was successful
             if(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
@@ -523,29 +523,6 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             CcLog.Message($"An unexpected error occurred: {ex.Message}");
             throw;
         }
-    }
-    
-    /// <summary>
-    /// Displays an OpenFileDialog to allow the user to locate the config.toml file.
-    /// </summary>
-    /// <returns>The full path to the selected file, or null if the dialog is cancelled.</returns>
-    private static string? ShowLocateConfigDialog()
-    {
-        using (var openFileDialog = new OpenFileDialog())
-        {
-            openFileDialog.Title = "Please Locate Your 'config.toml' File";
-            openFileDialog.Filter = "TOML Config File (*.toml)|*.toml|All files (*.*)|*.*";
-            openFileDialog.InitialDirectory = AppContext.BaseDirectory; // Start in the app's directory
-            openFileDialog.RestoreDirectory = true;
-
-            CcLog.Message("A file selection window has opened. Please use it to find your config file.");
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                return openFileDialog.FileName;
-            }
-        }
-        return null;
     }
     
 }

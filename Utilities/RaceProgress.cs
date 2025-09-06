@@ -1,9 +1,7 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using CrowdControl.Games.Packs.MCCCursedHaloCE;
+﻿using System.Net.Http;
 using CcLog = CrowdControl.Common.Log;
+
+namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 /// <summary>
 /// Monitors race progress and reports level/stage completion to a remote server.
@@ -11,12 +9,7 @@ using CcLog = CrowdControl.Common.Log;
 /// </summary>
 internal class RaceProgress
 {
-    internal class RaceCheckpointAddress() 
-    {
-        
-    }
-    
-    private readonly string _username;
+   private readonly string _username;
     private readonly string _password;
     private readonly MCCCursedHaloCE _mccCursedHaloCe;
 
