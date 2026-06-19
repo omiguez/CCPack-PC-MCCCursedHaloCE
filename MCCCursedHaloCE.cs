@@ -1,14 +1,15 @@
 ﻿//ccpragma { "include" : [ "Effects/ContinuousEffect.cs","Effects/OneShotEffect.cs","Effects/Implementations/ComplexEffects.cs","Effects/Implementations/Ammo.cs", "Effects/Implementations/MouseOverride.cs", "Effects/Implementations/KeyOverride.cs", "Effects/Implementations/ReceivedDamage.cs", "Effects/Implementations/H1ScriptEffects.cs", "Effects/Implementations/ApplyForces.cs", "Effects/Implementations/MovementSpeed.cs", "Effects/Implementations/UnstableAirtime.cs", "Effects/Implementations/PlayerPointerBased.cs", "Effects/EffectMutex.cs", "Effects/CursedHaloEffectList.cs", "Utilities/IndirectPointers.cs", "Utilities/InjectionManagement.cs", "LifeCycle/BaseHaloAddressResult.cs", "LifeCycle/IntegrityControl.cs", "Utilities/Debug.cs", "Utilities/ByteArrayBuilding/ByteArrayExtensions.cs", "Utilities/ByteArrayBuilding/InstructionManipulation.cs", "Utilities/InputEmulation/KeyManager.cs", "Utilities/InputEmulation/KeybindData.cs","Utilities/InputEmulation/GameAction.cs", "Utilities/InputEmulation/User32Imports/InputStructs.cs", "Utilities/InputEmulation/User32Imports/MouseEventFlags.cs", "Utilities/RaceProgress.cs", "Utilities/BadToml.cs", "Injections/Player.cs", "Injections/DamageModifier.cs", "Injections/ScriptHooks.cs", "Injections/MovementSpeed.cs", "Injections/UnstableAirtime.cs", "Injections/GameplayPolling.cs", "Injections/LevelSkipper.cs", "Injections/Weapon.cs"] }
 #define DEVELOPMENT
 
-using System.IO;
-using System.Runtime.InteropServices;
 using ConnectorLib;
-using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using ConnectorLib.Inject.VersionProfiles;
 using CrowdControl.Common;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 using CrowdControl.Games.Packs.MCCCursedHaloCE.Utilities.InputEmulation;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using AddressChain = ConnectorLib.Memory.AddressChain<ConnectorLib.Inject.InjectConnector>;
 using CcLog = CrowdControl.Common.Log;
 using ConnectorType = CrowdControl.Common.ConnectorType;
 
@@ -33,6 +34,13 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     private KeyManager keyManager;
 
     public override EffectList Effects { get; } = CursedHaloEffectList.Effects;
+    
+    // HttpClient lifecycle management best practices:
+    // https://learn.microsoft.com/dotnet/fundamentals/networking/http/httpclient-guidelines#recommended-use
+    private static HttpClient sharedHttpClient = new()
+    {
+        BaseAddress = new Uri("https://cursedhaloforcharity.com/"),
+    };
 
     public MCCCursedHaloCE(UserRecord player, Func<CrowdControlBlock, bool> responseHandler, Action<object> statusUpdateHandler)
         : base(player, responseHandler, statusUpdateHandler)
@@ -55,7 +63,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         this.keyManager.hidConnector = hidConnector;
         InitIntegrityControl();
         InitializeOneShotEffectQueueing();
-        StartProgressTrackerThread();
+        //StartProgressTrackerThread();
     }
 
     private void DeinitGame()
@@ -147,12 +155,48 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         return currentlyInGameplay;
     }
 
+    private string[] ReplaceWithRandomPositiveEffect()
+    {
+        var effectNames = CursedHaloEffectList.PositiveEffects;
+        int index = new Random().Next(0, effectNames.Count);
+        var effectName = effectNames.Skip(index).First();
+        var effect = Effects.FirstOrDefault(e => e.ID == effectName);
+        if (effect == null)
+        {
+            throw new Exception($"Tried to use random positive effect, but no effect was found in the effect list for {effectName}.");
+        }
+
+        return effect.ID.Split('_');
+    }
+
     private string[] ReplaceWithRandomEffect()
     {
-        int index = new Random().Next(1, Effects.Count);
-        Effect effect = Effects.Values.Skip(index).First();
-                
+        var randomEffectPrice = Effects.FirstOrDefault(p => p.ID.StartsWith("randomeffect"))?.Price;
+        if (randomEffectPrice == null)
+        {
+            throw new Exception("Tried to use random effect, but no random effect was found in the effect list.");
+        }
+        var curatedSelection = Effects.Where(p => p.Price >= randomEffectPrice).ToList();
+        int index = new Random().Next(0, curatedSelection.Count);
+        Effect effect = curatedSelection.Skip(index).First();
+
         return effect.ID.Split('_');
+    }
+
+    private async Task<bool> AreCheatsEnabled(EffectRequest request)
+    {
+        var streamerName = request.Target.Name;
+        var cheatStatusResponse = await sharedHttpClient.GetAsync($"/Race/GetCheatStatus?racer={streamerName}");
+        var cheatStatus = await cheatStatusResponse?.Content?.ReadAsStringAsync();
+        if (cheatStatus == null || cheatStatus == "none")
+        {
+            CcLog.Message($"Cheats are not enabled for {streamerName}");
+            return false;
+        }
+
+        CcLog.Message($"Checking cheat status for {streamerName}: {cheatStatus}");
+
+        return true;
     }
 
     protected override void StartEffect(EffectRequest request)
@@ -166,228 +210,247 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             code = ReplaceWithRandomEffect();
         }
 
+        if (code[0] == "randompositiveeffect")
+        {
+            code = ReplaceWithRandomPositiveEffect();
+        }
+
+        if (code[0] == "randomcheat")
+        {
+            var cheatsEnabled = AreCheatsEnabled(request).GetAwaiter().GetResult();
+            // TODO: check if cheats are enabled
+            CcLog.Message("Cheats enabled: " + cheatsEnabled.ToString());
+            code = ReplaceWithRandomPositiveEffect();
+        }
+
         switch (code[0])
-        {            
+        {
             case "thunderstorm":
-            {
-                TryEffect(request, () => IsReady(request),
-                    () =>
-                    {
-                        Thunderstorm((int)request.Duration.TotalMilliseconds, 10 * 33, 90 * 33, 5 * 33, 90 * 33);
-                        Respond(request, EffectStatus.Success);
-                        return true;
-                    });
-                break;
-            }
+                {
+                    TryEffect(request, () => IsReady(request),
+                        () =>
+                        {
+                            Thunderstorm((int)request.Duration.TotalMilliseconds, 10 * 33, 90 * 33, 5 * 33, 90 * 33);
+                            Respond(request, EffectStatus.Success);
+                            return true;
+                        });
+                    break;
+                }
             case "paranoia":
-            {
-                TryEffect(request, () => IsReady(request),
-                    () =>
-                    {
-                        Paranoia(request, 300);
-                        return true;
-                    });
-                break;
-            }
+                {
+                    TryEffect(request, () => IsReady(request),
+                        () =>
+                        {
+                            Paranoia(request, 300);
+                            return true;
+                        });
+                    break;
+                }
             case "takeammo":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-
-                float ammoAmount = code[1] switch
                 {
-                    "half" => 0.5f,
-                    "all" => 1f,
-                    "duplicate" => -1f,
-                    _ => 0,
-                };
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
 
-                TryEffect(request, () => IsReady(request),
-                    () =>
+                    float ammoAmount = code[1] switch
                     {
-                        TakeAwayAmmoFromCurrentWeapon(ammoAmount);
-                        return true;
-                    },
-                    mutex: EffectMutex.Ammo);
-                break;
-            }
+                        "half" => 0.5f,
+                        "all" => 1f,
+                        "duplicate" => -1f,
+                        _ => 0,
+                    };
+
+                    TryEffect(request, () => IsReady(request),
+                        () =>
+                        {
+                            TakeAwayAmmoFromCurrentWeapon(ammoAmount);
+                            return true;
+                        },
+                        mutex: EffectMutex.Ammo);
+                    break;
+                }
             case "fullauto":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-
-                switch (code[1])
                 {
-                    case "limitedammo": FullAuto(request, false); return;
-                    case "unlimitedammo": FullAuto(request, true); return;
-                    default: HandleInvalidRequest(request); return;
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+
+                    switch (code[1])
+                    {
+                        case "limitedammo": FullAuto(request, false); return;
+                        case "unlimitedammo": FullAuto(request, true); return;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "shield":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                {
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
 
-                switch (code[1])
-                {
-                    case "plus1":
-                        AddShield(request, 1, "boosted"); break;
-                    case "minus1":
-                        AddShield(request, -1, "weakened"); break;
-                    case "break":
-                        SetShield(request, 0); break;
-                    default:
-                        HandleInvalidRequest(request); return;
+                    switch (code[1])
+                    {
+                        case "plus1":
+                            AddShield(request, 1, "boosted"); break;
+                        case "minus1":
+                            AddShield(request, -1, "weakened"); break;
+                        case "break":
+                            SetShield(request, 0); break;
+                        default:
+                            HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "shieldRegen":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
                 {
-                    case "no":
-                        SetShieldRegen(request, ShieldRegenEffectType.No); break;
-                    case "instant":
-                        SetShieldRegen(request, ShieldRegenEffectType.Instant); break;
-                    default:
-                        HandleInvalidRequest(request); return;
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "no":
+                            SetShieldRegen(request, ShieldRegenEffectType.No); break;
+                        case "instant":
+                            SetShieldRegen(request, ShieldRegenEffectType.Instant); break;
+                        default:
+                            HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "health":
-            {
-                switch (code[1])
                 {
-                    case "1": SetHealth(request, 1, "healed you."); break;
-                    case "min": SetHealth(request, 0.01f, "left you on your last legs."); break;
-                    case "gain1peg": SetRelativeHealth(request, 1f / 8f, "healed you a little bit."); break;
-                    case "lose1peg": SetRelativeHealth(request, -1f / 8f, "poked you."); break;
-                    default: HandleInvalidRequest(request); return;
+                    switch (code[1])
+                    {
+                        case "1":
+                            SetHealth(request, 1, "healed you.");
+                            CcLog.Message("Name: " + request.Target.Name);
+                            CcLog.Message("login: " + request.Target.Login);
+                            CcLog.Message("Portable: " + request.Target.PortableName);
+                            CcLog.Message("Avatar: " + request.Target.AvatarURL);
+                            break;
+                        case "min": SetHealth(request, 0.01f, "left you on your last legs."); break;
+                        case "gain1peg": SetRelativeHealth(request, 1f / 8f, "healed you a little bit."); break;
+                        case "lose1peg": SetRelativeHealth(request, -1f / 8f, "poked you."); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "criticalhealth": OneHealthAndADream(request); break;
             case "healthRegen":
-            {
-                GiveHealthRegen(request, 0.2f, 1000); break;
-            }
+                {
+                    GiveHealthRegen(request, 0.2f, 1000); break;
+                }
             case "slowpoison": GiveHealthRegen(request, -0.1f, 1000); break;
             case "grenades":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
                 {
-                    case "give": GiveGrenades(request, 6, false, "gave you"); break;
-                    case "take": GiveGrenades(request, -6, false, "took away"); break;
-                    default: HandleInvalidRequest(request); return;
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "give": GiveGrenades(request, 6, false, "gave you"); break;
+                        case "take": GiveGrenades(request, -6, false, "took away"); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "playerspeed":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
                 {
-                    case "brisk": SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\""); break;
-                    case "ludicrous": SetPlayerMovementSpeed(request, 6f, "made you ludicrously fast."); break;
-                    case "slow": SetPlayerMovementSpeed(request, -0.5f, "is grabbing your feet and you feel slow."); break;
-                    case "reversed": SetPlayerMovementSpeed(request, -2f, "made your legs very confused."); break;
-                    case "anchored": SetPlayerMovementSpeed(request, -1f, "anchored you in place."); break;
-                    default: HandleInvalidRequest(request); return;
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "brisk": SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\""); break;
+                        case "ludicrous": SetPlayerMovementSpeed(request, 6f, "made you ludicrously fast."); break;
+                        case "slow": SetPlayerMovementSpeed(request, -0.5f, "is grabbing your feet and you feel slow."); break;
+                        case "reversed": SetPlayerMovementSpeed(request, -2f, "made your legs very confused."); break;
+                        case "anchored": SetPlayerMovementSpeed(request, -1f, "anchored you in place."); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "enemyspeed":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
                 {
-                    case "ludicrous": SetNPCMovementSpeed(request, 6f, "made your enemies olympic sprinters."); break;
-                    case "reversed": SetNPCMovementSpeed(request, -2f, "made your enemies moonwalk."); break;
-                    case "anchored": SetNPCMovementSpeed(request, -1f, "anchored your enemies."); break;
-                    default: HandleInvalidRequest(request); return;
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "ludicrous": SetNPCMovementSpeed(request, 6f, "made your enemies olympic sprinters."); break;
+                        case "reversed": SetNPCMovementSpeed(request, -2f, "made your enemies moonwalk."); break;
+                        case "anchored": SetNPCMovementSpeed(request, -1f, "anchored your enemies."); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "unstableairtime": ActivateUnstableAirtime(request); break;
             case "enemyreceiveddamage":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
                 {
-                    case "quad": SetDamageFactors(request, null, 4, null, "granted you QUAD DAMAGE. RIP AND TEAR.", OneShotEffect.QuadDamage); break;
-                    case "ludicrous": SetDamageFactors(request, null, 99999f, true, "granted you the might to crush your enemies in one blow."); break;
-                    case "half": SetDamageFactors(request, null, 0.5f, null, "gave your enemies twice the health and shields. The rascal!"); break;
-                    case "reversed": SetDamageFactors(request, null, -1f, null, "made all NPC get healed from any damage.", OneShotEffect.HealingBullets); break;
-                    case "immortal": SetDamageFactors(request, null, 0, false, "made all NPCs immortal.", OneShotEffect.EnemyGodModeS); break;
-                    default: HandleInvalidRequest(request); return;
-                }
-                break;
-            }
-            case "playerreceiveddamage":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
-                {
-                    case "tenth": SetDamageFactors(request, 0.1f, null, null, "made you almost bullet proof."); break;
-                    case "instadeath": SetDamageFactors(request, 9999f, null, null, "made your enemies be able to blow you or your shields up in one hit. Good luck."); break;
-                    case "invulnerable": SetDamageFactors(request, 0f, null, null, "made you IMMORTAL.", OneShotEffect.GodModeS); break;
-                    default: HandleInvalidRequest(request); return;
-                }
-                break;
-            }
-            case "allreceiveddamage":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
-                {
-                    case "instadeath": SetDamageFactors(request, 99999f, 99999f, true, "made everyone fragile as glass. One hit kills anyone, including you. Keep your shields up!", OneShotEffect.HeavenOrHell); break;
-                    case "invulnerable": SetDamageFactors(request, 0, 0, null, "made everyone immortal. This is awkward.", OneShotEffect.NerWarS); break;
-                    case "glass": SetDamageFactors(request, 3f, 3f, null, "made you do triple damage, but also take it.", OneShotEffect.GlassCannonS); break;
-                    default: HandleInvalidRequest(request); return;
-                }
-                break;
-            }
-            case "addspeed":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
-                {
-                    case "shove1":
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
                     {
-                        TryEffect(request, () => IsReady(request),
-                            () =>
-                            {
-                                ApplyRandomForce(0.5f, 0.5f, 0.15f);
-                                return true;
-                            });
-                        break;
+                        case "quad": SetDamageFactors(request, null, 4, null, "granted you QUAD DAMAGE. RIP AND TEAR.", OneShotEffect.QuadDamage); break;
+                        case "ludicrous": SetDamageFactors(request, null, 99999f, true, "granted you the might to crush your enemies in one blow."); break;
+                        case "half": SetDamageFactors(request, null, 0.5f, null, "gave your enemies twice the health and shields. The rascal!"); break;
+                        case "reversed": SetDamageFactors(request, null, -1f, null, "made all NPC get healed from any damage.", OneShotEffect.HealingBullets); break;
+                        case "immortal": SetDamageFactors(request, null, 0, false, "made all NPCs immortal.", OneShotEffect.EnemyGodModeS); break;
+                        default: HandleInvalidRequest(request); return;
                     }
-                    case "shake": ShakePlayer(request, 0.4f, 35, "is shaking you.", "The shakes are over"); break;
-                    case "drunk": ShakePlayer(request, 0.15f, 800, "gave you one too many drinks.", "Drunkness over, enjoy the hangover."); break;
-                    default: HandleInvalidRequest(request); return;
+                    break;
                 }
-                break;
-            }
+            case "playerreceiveddamage":
+                {
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "tenth": SetDamageFactors(request, 0.1f, null, null, "made you almost bullet proof."); break;
+                        case "instadeath": SetDamageFactors(request, 9999f, null, null, "made your enemies be able to blow you or your shields up in one hit. Good luck."); break;
+                        case "invulnerable": SetDamageFactors(request, 0f, null, null, "made you IMMORTAL.", OneShotEffect.GodModeS); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
+                }
+            case "allreceiveddamage":
+                {
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "instadeath": SetDamageFactors(request, 99999f, 99999f, true, "made everyone fragile as glass. One hit kills anyone, including you. Keep your shields up!", OneShotEffect.HeavenOrHell); break;
+                        case "invulnerable": SetDamageFactors(request, 0, 0, null, "made everyone immortal. This is awkward.", OneShotEffect.NerWarS); break;
+                        case "glass": SetDamageFactors(request, 3f, 3f, null, "made you do triple damage, but also take it.", OneShotEffect.GlassCannonS); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
+                }
+            case "addspeed":
+                {
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "shove1":
+                            {
+                                TryEffect(request, () => IsReady(request),
+                                    () =>
+                                    {
+                                        ApplyRandomForce(0.5f, 0.5f, 0.15f);
+                                        return true;
+                                    });
+                                break;
+                            }
+                        case "shake": ShakePlayer(request, 0.4f, 35, "is shaking you.", "The shakes are over"); break;
+                        case "drunk": ShakePlayer(request, 0.15f, 800, "gave you one too many drinks.", "Drunkness over, enjoy the hangover."); break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
+                }
             case "oneshotscripteffect":
-            {
-                if (code.Length < 2 || !int.TryParse(code[1], out int slot))
                 {
-                    HandleInvalidRequest(request); return;
-                }
+                    if (code.Length < 2 || !int.TryParse(code[1], out int slot))
+                    {
+                        HandleInvalidRequest(request); return;
+                    }
 
-                QueueOneShotEffect(request, (OneShotEffect)slot);
-                break;
-            }
+                    QueueOneShotEffect(request, (OneShotEffect)slot);
+                    break;
+                }
             case "continuouseffect":
-            {
-                if (code.Length < 2 || !int.TryParse(code[1], out int slot))
                 {
-                    HandleInvalidRequest(request); return;
-                }
+                    if (code.Length < 2 || !int.TryParse(code[1], out int slot))
+                    {
+                        HandleInvalidRequest(request); return;
+                    }
 
-                ApplyContinuousEffect(request, slot);
-                break;
-            }
+                    ApplyContinuousEffect(request, slot);
+                    break;
+                }
             case "crabrave": CrabRave(request); break;
             case "moonwalk": Moonwalk(request); break;
             case "forcerepeatedjump": BunnyHop(request); break;
@@ -400,39 +463,39 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             case "forcecrouch": ForceCrouch(request); break;
             case "berserker": Berserker(request); break;
             case "forcemouse":
-            {
-                if (code.Length < 2) { HandleInvalidRequest(request); return; }
-                switch (code[1])
                 {
-                    case "down": ApplyMovementEveryFrame(request, 0, 130, "made your feet quite interesting.", "Foot fetish erradicated."); break;
-                    case "up": ApplyMovementEveryFrame(request, 0, -130, "put your hands up to the sky.", "Your arms are too tired for this."); break;
-                    case "spin": ApplyMovementEveryFrame(request, 130, 0, "started the S.P.E.E.N. protocol.", "S.P.E.E.N. protocol completed"); break;
-                    case "drift":
-                        Random rng = new Random();
-                        int dx = rng.Next(-15, 15);
-                        int dy = rng.Next(-15, 15);
+                    if (code.Length < 2) { HandleInvalidRequest(request); return; }
+                    switch (code[1])
+                    {
+                        case "down": ApplyMovementEveryFrame(request, 0, 130, "made your feet quite interesting.", "Foot fetish erradicated."); break;
+                        case "up": ApplyMovementEveryFrame(request, 0, -130, "put your hands up to the sky.", "Your arms are too tired for this."); break;
+                        case "spin": ApplyMovementEveryFrame(request, 130, 0, "started the S.P.E.E.N. protocol.", "S.P.E.E.N. protocol completed"); break;
+                        case "drift":
+                            Random rng = new Random();
+                            int dx = rng.Next(-15, 15);
+                            int dy = rng.Next(-15, 15);
 
-                        ApplyMovementEveryFrame(request, dx, dy, "made your joycon drift. Yes, on keyboard and mouse.", "fixed your joycon.");
-                        break;
-                    default: HandleInvalidRequest(request); return;
+                            ApplyMovementEveryFrame(request, dx, dy, "made your joycon drift. Yes, on keyboard and mouse.", "fixed your joycon.");
+                            break;
+                        default: HandleInvalidRequest(request); return;
+                    }
+                    break;
                 }
-                break;
-            }
             case "forcemouseshake": ForceMouseShake(request, 120, 0.8f, 3); break;
             case "movetohalo":
-            {
-                TryEffect(request, () => IsReady(request),
-                    () =>
-                    {
-                        Connector.SendMessage($"{request.DisplayViewer} sent you to Halo.");
-                        SetNextMap(2);
-                        QueueOneShotEffect((short)OneShotEffect.SkipLevel, 0); // Slipspace jump.
-                        return true;
-                    },
-                    mutex: EffectMutex.LevelChangeOrRestart);
+                {
+                    TryEffect(request, () => IsReady(request),
+                        () =>
+                        {
+                            Connector.SendMessage($"{request.DisplayViewer} sent you to Halo.");
+                            SetNextMap(2);
+                            QueueOneShotEffect((short)OneShotEffect.SkipLevel, 0); // Slipspace jump.
+                            return true;
+                        },
+                        mutex: EffectMutex.LevelChangeOrRestart);
 
-                break;
-            }
+                    break;
+                }
             //#if DEVELOPMENT
             //                case "testdurationparam":
             //                    {
@@ -470,9 +533,10 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                 break;
         }
     }
-    private void StartProgressTrackerThread() {
+    private void StartProgressTrackerThread()
+    {
         CcLog.Message("Cursed Halo For Charity - Race Progress Reporter");
-        
+
         // Define the default path for the configuration file.
         string? configPath = "config.toml";
 
@@ -480,10 +544,11 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         if (!File.Exists(configPath))
         {
 
-            while (!File.Exists(configPath)) {
+            while (!File.Exists(configPath))
+            {
                 CcLog.Message($"Error: Configuration file not found at '{Path.GetFullPath(configPath)}'.");
                 configPath = "%appdata%/CrowdControl-Apps/HaloCE/config.json";
-        
+
                 if (string.IsNullOrEmpty(configPath))
                 {
                     Thread.Sleep(5000);
@@ -498,12 +563,12 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             // Read the TOML file content.
             string tomlContent = File.ReadAllText(configPath);
             BadToml tomlTable = BadToml.Parse(tomlContent);
-            
+
             string username = tomlTable["username"];
             string password = tomlTable["password"];
-            
+
             // Check if deserialization was successful
-            if(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 throw new Exception("Username and password are required. Please check toml file.");
             }
@@ -524,5 +589,5 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             throw;
         }
     }
-    
+
 }
