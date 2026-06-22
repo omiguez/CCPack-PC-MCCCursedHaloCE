@@ -218,8 +218,12 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         if (code[0] == "randomcheat")
         {
             var cheatsEnabled = AreCheatsEnabled(request).GetAwaiter().GetResult();
-            // TODO: check if cheats are enabled
             CcLog.Message("Cheats enabled: " + cheatsEnabled.ToString());
+            if (!cheatsEnabled)
+            {
+                return;
+            }
+            
             code = ReplaceWithRandomPositiveEffect();
         }
 
