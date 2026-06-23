@@ -46,7 +46,6 @@ public static class CursedHaloEffectList
         "oneshotscripteffect_" + (int)OneShotEffect.GiveUnsafeCheckpoint,
         "oneshotscripteffect_" + (int)OneShotEffect.ActiveCamo,
         "continuouseffect_" + (int)OneShotEffect.AiBreak,
-        "oneshotscripteffect_" + (int)OneShotEffect.GiveSafeCheckpoint,
         "continuouseffect_" + (int)OneShotEffect.TrulyInfiniteAmmo,
         "oneshotscripteffect_" + (int)OneShotEffect.GiveSafeCheckpoint,
         "continuouseffect_" + (int)OneShotEffect.Jetpack,
