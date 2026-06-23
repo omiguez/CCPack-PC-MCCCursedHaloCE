@@ -19,6 +19,41 @@ public static class CursedHaloEffectList
     public const string Random = "Random effect.";
 
     private const float PRICINGFACTOR = 0.1f;
+
+    public static List<string> PositiveEffects = new List<string>
+    {
+        "takeammo_duplicate",
+        "fullauto_unlimitedammo",
+        "oneshotscripteffect_" + (int)OneShotEffect.SummonMinecraft,
+        "oneshotscripteffect_" + (int)OneShotEffect.SummonHunter,
+        "oneshotscripteffect_" + (int)OneShotEffect.SummonTurret,
+        "oneshotscripteffect_" + (int)OneShotEffect.SummonPiss,
+        "oneshotscripteffect_" + (int)OneShotEffect.SummonSteve,
+        "oneshotscripteffect_" + (int)OneShotEffect.SummonCaptain,
+        "oneshotscripteffect_" + (int)OneShotEffect.AiFriendly,
+        "oneshotscripteffect_" + (int)OneShotEffect.RandomLoadout,
+        "oneshotscripteffect_" + (int)OneShotEffect.SpawnRandomVehicle,
+        "oneshotscripteffect_" + (int)OneShotEffect.SpawnToolgun,
+        "shield_plus1",
+        "shieldRegen_instant",
+        "healthRegen",
+        "playerspeed_brisk",
+        "enemyreceiveddamage_quad",
+        "playerreceiveddamage_invulnerable",
+        "allreceiveddamage_instadeath",
+        "continuouseffect_" + (int)OneShotEffect.OneShotOneKill,
+        "continuouseffect_" + (int)OneShotEffect.Deathless,
+        "oneshotscripteffect_" + (int)OneShotEffect.GiveUnsafeCheckpoint,
+        "oneshotscripteffect_" + (int)OneShotEffect.ActiveCamo,
+        "continuouseffect_" + (int)OneShotEffect.AiBreak,
+        "oneshotscripteffect_" + (int)OneShotEffect.GiveSafeCheckpoint,
+        "continuouseffect_" + (int)OneShotEffect.TrulyInfiniteAmmo,
+        "oneshotscripteffect_" + (int)OneShotEffect.GiveSafeCheckpoint,
+        "continuouseffect_" + (int)OneShotEffect.Jetpack,
+        "continuouseffect_" + (int)OneShotEffect.Medusa,
+        "oneshotscripteffect_" + (int)OneShotEffect.SkipLevel,
+        "berserker"        
+    };
     public static EffectList Effects = new List<Effect> {
 //#if DEVELOPMENT
 //            new("Abort all injection", "abortallinjection")
@@ -32,7 +67,11 @@ public static class CursedHaloEffectList
 
         // New stuff
         new("Trigger a random effect", "randomeffect") { Category = Random, Duration = 30,
-            Description = "Activate a random CC effect, from the puniest to the harshest. All have the same chances of being selected. Timed ones will last 30 seconds.", Price = (uint)(500 * PRICINGFACTOR)},
+            Description = "Activate a random CC effect, worth at least the price of this effect. Timed ones will last 30 seconds.", Price = (uint)(500 * PRICINGFACTOR)},
+        new("Trigger a random POSITIVE effect", "randompositiveeffect") { Category = Random, Duration = 30,
+            Description = "Activate a random (mostly) positive CC effect, worth at least the price of this effect. Timed ones will last 30 seconds.", Price = (uint)(500 * PRICINGFACTOR)},
+        new("Trigger a random cheat", "randomcheat") { Category = Random, Duration = 30,
+            Description = "ONLY WORKS IF CHEATS ARE ENABLED FOR THIS STREAMER! Activate a random helpful CC effect. Timed ones will last 30 seconds.", Price = (uint)(100 * PRICINGFACTOR)},
         //-----
         new("Take half of the current weapon ammo", "takeammo_half") {Category = WeaponsAndAmmo,
             Description = "Yoink half of the ammo/battery of the currently held weapon.", Price = (uint) (500 * PRICINGFACTOR /*, ScaleFactor = 1.3f, ScaleDecayTime = TimeSpan.FromMinutes(1)*/)},
