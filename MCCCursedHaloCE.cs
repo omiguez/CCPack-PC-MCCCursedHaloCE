@@ -185,7 +185,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
     private async Task<bool> AreCheatsEnabled(EffectRequest request)
     {
-        var streamerName = request.Target.Name;
+        var streamerName = request.Target?.Name ?? "nobody";
         var cheatStatusResponse = await sharedHttpClient.GetAsync($"/Race/GetCheatStatus?racer={streamerName}");
         var cheatStatus = await cheatStatusResponse?.Content?.ReadAsStringAsync();
         if (cheatStatus == null || cheatStatus == "none")
@@ -223,7 +223,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             {
                 return;
             }
-            
+                        
             code = ReplaceWithRandomPositiveEffect();
         }
 
