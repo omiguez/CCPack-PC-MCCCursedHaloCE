@@ -24,6 +24,7 @@ public partial class MCCCursedHaloCE
 
     private const string ScriptVarPointerId = "scriptVarPointerId";
     private const string ScriptVar2PointerId = "scriptVar2PointerId";
+    private const string ScriptVar3PointerId = "scriptVar3PointerId";
 
     /// <summary>
     /// Inserts code that writes pointers to the scripts variables, <see cref="scriptVarInstantEffectsPointerPointer_ch"/>
@@ -56,12 +57,12 @@ public partial class MCCCursedHaloCE
         IntPtr scriptVar2PointerPointer = CreateCodeCave(ProcessName, 8);
         IntPtr scriptVar3PointerPointer = CreateCodeCave(ProcessName, 8);
         CreatedCaves.Add((ScriptVarPointerId, (long)scriptVarPointerPointer, 8));
-        CreatedCaves.Add((ScriptVarPointerId, (long)scriptVar2PointerPointer, 8));
-        CreatedCaves.Add((ScriptVarPointerId, (long)scriptVar3PointerPointer, 8));
+        CreatedCaves.Add((ScriptVar2PointerId, (long)scriptVar2PointerPointer, 8));
+        CreatedCaves.Add((ScriptVar3PointerId, (long)scriptVar3PointerPointer, 8));
 
         CcLog.Message("Script var 1 pointer: " + ((long)scriptVarPointerPointer).ToString("X"));
         CcLog.Message("Script var 2 pointer: " + ((long)scriptVar2PointerPointer).ToString("X"));
-        CcLog.Message("Script var 2 pointer: " + ((long)scriptVar3PointerPointer).ToString("X"));
+        CcLog.Message("Script var 3 pointer: " + ((long)scriptVar3PointerPointer).ToString("X"));
 
         CcLog.Message("Injection address: " + injectionAddress.ToString("X"));
         scriptVarInstantEffectsPointerPointer_ch = AddressChain.Absolute(Connector, (long)scriptVarPointerPointer);
@@ -73,7 +74,7 @@ public partial class MCCCursedHaloCE
         // checks also that the nearby "anchor" variables defined in the script match it to avoid
         // false positives, then writes the pointer on a small code cave.
         byte[] variableGetter = new byte[]
-            {
+        {
                 0x52, // push rdx
                 0x48, 0x8B, 0xD1, // mov rdx, rcx
                 0x48, 0x6B, 0xD2, 0x08, //imul rdx, 0x8
@@ -98,18 +99,18 @@ public partial class MCCCursedHaloCE
                 0x58, // pop rax
                 0xEB).AppendRelativePointer("popPushedRegistersAndEnd", 0x68) //jmp pop rdx (31)
             .LocalJumpLocation("checkIfScriptVar2").Append(
-                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, // NOP to remove the check for a specific var value that I commented out, since this one will be changing constantly, and we need to dely on the landmarks
+                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, // NOP to remove the check for a specific var value that I commented out, since this one will be changing constantly, and we need to rely on the landmarks
                 0x90, 0x90)
-                //0x81, 0x3A, 0xCD, 0xAB, 0x34, 0x12, // cmp [rdx], 0x40 00 00 00 ;compare to initial value of var
-                //0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x2B) // jne 0x2B to "pop rdx" to avoid storing any variable that isn't our marker
+            //0x81, 0x3A, 0xCD, 0xAB, 0x34, 0x12, // cmp [rdx], 0x40 00 00 00 ;compare to initial value of var
+            //0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x2B) // jne 0x2B to "pop rdx" to avoid storing any variable that isn't our marker
             .Append(
                 0x48, 0x83, 0xC2, 0x08, // add rdx,08
                 0x81, 0x3A, 0x09, 0xA4, 0x5D, 0x2E,//cmp [rdx],2E5DA409 ; compare to value of right anchor, 777888777
-                0x75).AppendRelativePointer("checkIfScriptVar3", 0x1F) //jne (0X1F), to pop rdx
+                0x75).AppendRelativePointer("checkIfScriptVar3", 0x21) //jne (0X1F), to pop rdx
             .Append(
                 0x48, 0x83, 0xEA, 0x10,//sub rdx,10 (8x2)
                 0x81, 0x3A, 0xB1, 0xD0, 0x5E, 0x07,//cmp [rdx],75ED0B1 L compare to value of left anchor 123654321)
-                0x75).AppendRelativePointer("checkIfScriptVar3", 0x13)  //jne 0x13, to pop rdx
+                0x75).AppendRelativePointer("checkIfScriptVar3", 0x15)  //jne 0x13, to pop rdx
             .Append(
                 0x48, 0x83, 0xC2, 0x08, // add rdx, 08 <- reset offset to point again to the main variable instead of an anchor
                 0x50, // push rax
@@ -125,11 +126,11 @@ public partial class MCCCursedHaloCE
             //0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x2B) // jne 0x2B to "pop rdx" to avoid storing any variable that isn't our marker
             .Append(
                 0x48, 0x83, 0xC2, 0x08, // add rdx,08
-                0x81, 0x3A, 0xBE, 0xBA, 0xEF, 0xBE,//cmp [rdx],0xBEEFBABE ; compare to value of right anchor, 0xBEEFBABE
+                0x81, 0x3A, 0xEF, 0xBE, 0xAD, 0xDE,//cmp [rdx],0xDEADBEEF ; compare to value of right anchor, 0xDEADBEEF
                 0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x1F) //jne (0X1F), to pop rdx
             .Append(
                 0x48, 0x83, 0xEA, 0x10,//sub rdx,10 (8x2)
-                0x81, 0x3A, 0xEF, 0xBE, 0xAD, 0xDE,//cmp [rdx],0xDEADBEEF L compare to value of left anchor 0xDEADBEEF)
+                0x81, 0x3A, 0xBE, 0xBA, 0xEF, 0xBE,//cmp [rdx],0xBEEFBABE ; compare to value of left anchor 0xBEEFBABE)
                 0x75).AppendRelativePointer("popPushedRegistersAndEnd", 0x13)  //jne 0x13, to pop rdx
             .Append(
                 0x48, 0x83, 0xC2, 0x08, // add rdx, 08 <- reset offset to point again to the main variable instead of an anchor
