@@ -120,7 +120,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
         if (code[0] == "oneshotscripteffect" && !VerifyIndirectPointerIsReady(scriptVarInstantEffectsPointerPointer_ch))
         {
-            CcLog.Message("No one-shot script pointer found");
+            CcLog.Message("No one-shotshot script pointer found");
             return false;
         }
 
@@ -183,9 +183,8 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         return effect.ID.Split('_');
     }
 
-    private async Task<bool> AreCheatsEnabled(EffectRequest request)
+    private async Task<bool> AreCheatsEnabled(string streamerName)
     {
-        var streamerName = request.Target?.Name ?? "nobody";
         var cheatStatusResponse = await sharedHttpClient.GetAsync($"/Race/GetCheatStatus?racer={streamerName}");
         var cheatStatus = await cheatStatusResponse?.Content?.ReadAsStringAsync();
         if (cheatStatus == null || cheatStatus == "none")
@@ -217,7 +216,8 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
         if (code[0] == "randomcheat")
         {
-            var cheatsEnabled = AreCheatsEnabled(request).GetAwaiter().GetResult();
+            var streamerName = request.Target?.Name ?? "nobody";
+            var cheatsEnabled = AreCheatsEnabled(streamerName).GetAwaiter().GetResult();
             CcLog.Message("Cheats enabled: " + cheatsEnabled.ToString());
             if (!cheatsEnabled)
             {
@@ -229,6 +229,23 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
         switch (code[0])
         {
+            case "fuckyouiwin":
+                {
+                    TryEffect(request, () => IsReady(request),
+                        () =>
+                        {
+                            AddShield(request, 99, "boosted");                            
+                            SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
+                            QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
+                            QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                            QueueOneShotEffect(request, OneShotEffect.QuadDamage);
+                            SetDamageFactors(request, null, 4, null, "granted you QUAD DAMAGE. RIP AND TEAR.");
+                            SetDamageFactors(request, 0f, null, null, "made you IMMORTAL.", OneShotEffect.GodModeS);
+
+                            return true;
+                        });
+                    break;
+                }
             case "thunderstorm":
                 {
                     TryEffect(request, () => IsReady(request),
