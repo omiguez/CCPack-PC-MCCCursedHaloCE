@@ -92,6 +92,30 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
     protected override GameState GetGameState()
     {
+
+        if (TryGetIndirectByteArray(raceProgressDetection_ch, 0, 4, out byte[] scriptVarBytes))
+        {
+            int scriptVarValue = BitConverter.ToInt32(scriptVarBytes, 0);
+            CcLog.Message("Race progress var value is " + scriptVarValue);
+        }
+        else
+        {
+            CcLog.Debug("Can't find script var value");
+        }
+
+        CcLog.Debug($"Effect trigger var cave location: " + scriptVarInstantEffectsPointerPointer_ch.Address.ToString("X"));
+        CcLog.Debug($"Gameplay pollling var cave location: " + scriptVarPauseDetection_ch.Address.ToString("X"));
+
+        CcLog.Debug($"Progress var cave location: " + raceProgressDetection_ch.Address.ToString("X"));
+
+        //if (AreCheatsEnabled("ZePistachio").GetAwaiter().GetResult())
+        //{
+        //    ReportStatus("healthRegen", EffectStatus.MenuHidden);
+        //}
+        //else
+        //{
+        //    ReportStatus("healthRegen", EffectStatus.MenuVisible);
+        //}
         return base.GetGameState();
     }
 
@@ -202,6 +226,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     {
         CcLog.Message("StartEffect started");
         CcLog.Message(FinalCode(request));
+        ReportStatus("berserker", EffectStatus.MenuAvailable);
         var code = FinalCode(request).Split('_');
 
         while (code[0] == "randomeffect")
@@ -231,19 +256,24 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         {
             case "fuckyouiwin":
                 {
-                    TryEffect(request, () => IsReady(request),
-                        () =>
-                        {
-                            AddShield(request, 99, "boosted");                            
-                            SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
-                            QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
-                            QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
-                            QueueOneShotEffect(request, OneShotEffect.QuadDamage);
-                            SetDamageFactors(request, null, 4, null, "granted you QUAD DAMAGE. RIP AND TEAR.");
-                            SetDamageFactors(request, 0f, null, null, "made you IMMORTAL.", OneShotEffect.GodModeS);
-
-                            return true;
-                        });
+                    RepeatAction(request, () => IsReady(request),
+            () => Connector.SendMessage($"{request.DisplayViewer} {"says you win"}."),
+            TimeSpan.FromSeconds(1),
+            IsInGameplay,
+            TimeSpan.FromMilliseconds(500),
+            () =>
+            {
+                AddShield(request, 99, "boosted");
+                SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
+                //QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
+                //QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                //QueueOneShotEffect(request, OneShotEffect.QuadDamage);
+                SetDamageFactors(request, 0, 4, true, "granted you instakills and invulnerability.");
+                return true;
+            },
+            TimeSpan.FromMilliseconds(1000),
+            false,
+            EffectMutex.Ammo);
                     break;
                 }
             case "thunderstorm":
