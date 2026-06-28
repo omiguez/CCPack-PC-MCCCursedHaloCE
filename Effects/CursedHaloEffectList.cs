@@ -72,7 +72,7 @@ public static class CursedHaloEffectList
         new("Trigger a random cheat", "randomcheat") { Category = Random, Duration = 30,
             Description = "ONLY WORKS IF CHEATS ARE ENABLED FOR THIS STREAMER! Activate a random helpful CC effect. Timed ones will last 30 seconds.", Price = (uint)(100 * PRICINGFACTOR)},
         new("Fuck you, I win", "fuckyouiwin") { Category = Random, Duration = 9999999,
-            Description = "Quad damage, invincible, fast speed, infinite ammo", Price = (uint)(999999999 * PRICINGFACTOR)},
+            Description = "Quad damage, invincible, fast speed, infinite ammo", Price = (uint)(999999 * PRICINGFACTOR)},
         //-----
         new("Take half of the current weapon ammo", "takeammo_half") {Category = WeaponsAndAmmo,
             Description = "Yoink half of the ammo/battery of the currently held weapon.", Price = (uint) (500 * PRICINGFACTOR /*, ScaleFactor = 1.3f, ScaleDecayTime = TimeSpan.FromMinutes(1)*/)},
