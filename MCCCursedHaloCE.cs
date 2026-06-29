@@ -18,6 +18,7 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 public partial class MCCCursedHaloCE : InjectEffectPack
 {
     private string? CachedStreamerName { get; set; } = null;
+    private bool cheatsEnabled = false;
     private const string ProcessName = "MCC-Win64-Shipping";
 
     [DllImport("user32.dll")]
@@ -108,20 +109,29 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         CcLog.Debug($"Gameplay pollling var cave location: " + scriptVarPauseDetection_ch?.Address.ToString("X"));
         CcLog.Debug($"Progress var cave location: " + raceProgressDetection_ch.Address.ToString("X"));
 
-        if (CachedStreamerName != null &&  AreCheatsEnabled("CachedStreamerName").GetAwaiter().GetResult())
+        if (!cheatsEnabled && CachedStreamerName != null && AreCheatsEnabled(CachedStreamerName).GetAwaiter().GetResult())
         {
             ReportStatus("mercy", EffectStatus.MenuVisible);
+            ReportStatus("bettermercy", EffectStatus.MenuVisible);
+            CcLog.Message("Cheats enabled for " + CachedStreamerName);
+            cheatsEnabled = true;
         }
-        else
+        else if (CachedStreamerName == null || !AreCheatsEnabled(CachedStreamerName).GetAwaiter().GetResult())
         {
             ReportStatus("mercy", EffectStatus.MenuHidden);
+            ReportStatus("bettermercy", EffectStatus.MenuHidden);
+            if (cheatsEnabled)
+            {
+                CcLog.Message("Cheats disabled for " + CachedStreamerName);
+                cheatsEnabled = false;
+            }
+            
         }
         return base.GetGameState();
     }
 
     private bool IsInGameplayAndPointersAreOk(EffectRequest request)
     {
-        CachedStreamerName = request.Target?.Name ?? "nobody";
         if (!IsInGameplay())
         {
             CcLog.Message("Not in gameplay");
@@ -180,19 +190,19 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         return currentlyInGameplay;
     }
 
-    private string[] ReplaceWithRandomPositiveEffect()
-    {
-        var effectNames = CursedHaloEffectList.PositiveEffects;
-        int index = new Random().Next(0, effectNames.Count);
-        var effectName = effectNames.Skip(index).First();
-        var effect = Effects.FirstOrDefault(e => e.ID == effectName);
-        if (effect == null)
-        {
-            throw new Exception($"Tried to use random positive effect, but no effect was found in the effect list for {effectName}.");
-        }
+    //private string[] ReplaceWithRandomPositiveEffect()
+    //{
+    //    var effectNames = CursedHaloEffectList.PositiveEffects;
+    //    int index = new Random().Next(0, effectNames.Count);
+    //    var effectName = effectNames.Skip(index).First();
+    //    var effect = Effects.FirstOrDefault(e => e.ID == effectName);
+    //    if (effect == null)
+    //    {
+    //        throw new Exception($"Tried to use random positive effect, but no effect was found in the effect list for {effectName}.");
+    //    }
 
-        return effect.ID.Split('_');
-    }
+    //    return effect.ID.Split('_');
+    //}
 
     private string[] ReplaceWithRandomEffect()
     {
@@ -214,61 +224,92 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         var cheatStatus = await cheatStatusResponse?.Content?.ReadAsStringAsync();
         if (cheatStatus == null || cheatStatus == "none")
         {
-            CcLog.Message($"Cheats are not enabled for {streamerName}");
+            CcLog.Debug($"Cheats are not enabled for {streamerName}");
             return false;
         }
 
-        CcLog.Message($"Checking cheat status for {streamerName}: {cheatStatus}");
+        CcLog.Debug($"Checking cheat status for {streamerName}: {cheatStatus}");
 
         return true;
     }
 
+    private void CacheStreamerName(EffectRequest request)
+    {
+        CachedStreamerName = request.Target?.Name ?? "nobody";
+    }
     protected override void StartEffect(EffectRequest request)
     {
+        CacheStreamerName(request);
+        CcLog.Message($"Name: {request.Target?.Name ?? "no name"}, Login: {request.Target?.Login ?? "no login"}");
         CcLog.Message("StartEffect started");
-        CcLog.Message(FinalCode(request));
-        ReportStatus("berserker", EffectStatus.MenuAvailable);
+        CcLog.Message(FinalCode(request));        
         var code = FinalCode(request).Split('_');
 
-        while (code[0] == "randomeffect")
-        {
-            code = ReplaceWithRandomEffect();
-        }
+        //while (code[0] == "randomeffect")
+        //{
+        //    code = ReplaceWithRandomEffect();
+        //}
 
-        if (code[0] == "randompositiveeffect")
-        {
-            code = ReplaceWithRandomPositiveEffect();
-        }
+        //if (code[0] == "randompositiveeffect")
+        //{
+        //    //code = ReplaceWithRandomPositiveEffect();
+        //}
 
-        if (code[0] == "randomcheat")
-        {
-            var streamerName = request.Target?.Name ?? "nobody";
-            var cheatsEnabled = AreCheatsEnabled(streamerName).GetAwaiter().GetResult();
-            CcLog.Message("Cheats enabled: " + cheatsEnabled.ToString());
-            if (!cheatsEnabled)
-            {
-                return;
-            }
+        //if (code[0] == "randomcheat")
+        //{
+        //    //var streamerName = request.Target?.Name ?? "nobody";
+        //    //var cheatsEnabled = AreCheatsEnabled(streamerName).GetAwaiter().GetResult();
+        //    //CcLog.Message("Cheats enabled: " + cheatsEnabled.ToString());
+        //    //if (!cheatsEnabled)
+        //    //{
+        //    //    return;
+        //    //}
                         
-            code = ReplaceWithRandomPositiveEffect();
-        }
+        //    ////code = ReplaceWithRandomPositiveEffect();
+        //}
 
         switch (code[0])
         {
             case "mercy":
-                TryEffect(request, () => IsReady(),
+                StartTimed(request, () => IsReady(request),
                 () =>
                 {
-                    AddShield(request, 5, "boosted");
-                    SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
-                    QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
-                    QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                    AddShield(request, 1, "boosted");
+                    SetPlayerMovementSpeedWithoutEffect(1.4f);
                     QueueOneShotEffect(request, OneShotEffect.QuadDamage);
-                    SetDamageFactors(request, 0.1f, 4, true, "granted you super armor and quad damage.");
-                }, () =>
-                {
-                    SetDamageFactors(request, 1f, 1f, false, "removed super armor and quad damage.");
-                });
+                    QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                    SetDamageFactorsWithoutEffect(0.5f, 4, true);
+
+                    return true;
+                },
+                mutex: [EffectMutex.Ammo, EffectMutex.NPCReceivedDamage, EffectMutex.PlayerReceivedDamage])
+                    .WhenCompleted.Then(() =>
+                    {
+                        SetPlayerMovementSpeedWithoutEffect(1f);
+                        SetDamageFactorsWithoutEffect(1, 1, false);
+                    }
+                );
+                break;
+            case "bettermercy":
+                StartTimed(request, () => IsReady(request),
+                     () =>
+                     {
+                         AddShield(request, 5, "boosted");
+                         SetPlayerMovementSpeedWithoutEffect(1.4f);
+                         QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
+                         QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                         SetDamageFactorsWithoutEffect(0.1f, 4, true);
+
+
+                         return true;
+                     },
+                     mutex: [EffectMutex.Ammo, EffectMutex.NPCReceivedDamage, EffectMutex.PlayerReceivedDamage])
+                         .WhenCompleted.Then(() =>
+                         {
+                             SetPlayerMovementSpeedWithoutEffect(1f);
+                             SetDamageFactorsWithoutEffect(1, 1, false);
+                         }
+                     );
                 break;
             case "fuckyouiwin":
                 RepeatAction(request, () => IsReady(request),
@@ -279,16 +320,14 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                 () =>
                 {
                     AddShield(request, 99, "boosted");
-                    SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
+                    SetPlayerMovementSpeedWithoutEffect(1.4f);
                     QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
                     QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
-                    QueueOneShotEffect(request, OneShotEffect.QuadDamage);
-                    SetDamageFactors(request, 0, 4, true, "granted you super armor and quad damage.");
+                    SetDamageFactorsWithoutEffect(0, 4, true);
                     return true;
                 },
-                TimeSpan.FromMilliseconds(1000),
-                false,
-                EffectMutex.Ammo);
+                TimeSpan.FromMilliseconds(5000),
+                false);
                 break;                
             case "thunderstorm":
                 {

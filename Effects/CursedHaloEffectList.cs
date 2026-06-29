@@ -7,8 +7,8 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE.Effects;
 // Lists every effect for the Effect Pack.
 public static class CursedHaloEffectList
 {
-    public const string PositiveIncentive = "Positive incentives";
-    public const string NegativeIncentive = "Negative incentives";
+    public const string PositiveIncentive = "Helpful incentives";
+    public const string NegativeIncentive = "Hurtful incentives";
     public const string NeutralIncentive = "Chaotic Neutral incentives";
     //public const string HealthAndShieldsCategory = "Health and shields";
     //public const string SpeedAndMovementCategory = "Movement and speed";
@@ -305,7 +305,9 @@ public static class CursedHaloEffectList
 
         // Mercy
         new("Mercy", "mercy") { Category = PositiveIncentive, Duration = 20,
-            Description = "Give the player a taste of infinite power. Available only to those struggling", Price = (uint) (100 * PRICINGFACTOR )},
+            Description = "Give the player a taste of power. Available only to those struggling", Price = (uint) (100 * PRICINGFACTOR )},
+        new("Better Mercy", "bettermercy") { Category = PositiveIncentive, Duration = 20,
+            Description = "Give the player a taste of infinite power. Available only to those struggling", Price = (uint) (500 * PRICINGFACTOR )},
         // Discarded
         //new("Break shield", "shield_break") {Category = Discarded,
         //    Description = "Sets shields to 0. Discarded because it breaks the give/take shield bid wars.", Price = (uint) (* PRICINGFACTOR )},
