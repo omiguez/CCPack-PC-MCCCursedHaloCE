@@ -74,7 +74,7 @@ public static class CursedHaloEffectList
         //    Description = "Activate a random (mostly) positive CC effect, worth at least the price of this effect. Timed ones will last 30 seconds.", Price = (uint)(500 * PRICINGFACTOR)},
         //new("Trigger a random cheat", "randomcheat") { Category = Random, Duration = 30,
         //    Description = "ONLY WORKS IF CHEATS ARE ENABLED FOR THIS STREAMER! Activate a random helpful CC effect. Timed ones will last 30 seconds.", Price = (uint)(100 * PRICINGFACTOR)},
-        new("Fuck you, I win", "fuckyouiwin") { Category = PositiveIncentive, Duration = 9999999,
+        new("Fuck you, I win", "fuckyouiwin") { Category = PositiveIncentive, Duration = 14400,
             Description = "Instant kills, invincibility, fast speed, infinite ammo, lasts for hours. But let's be real, you can't afford it.", Price = (uint)(999999 * PRICINGFACTOR)},
         //-----
         new("Take half of the current weapon ammo", "takeammo_half") {Category = NegativeIncentive,

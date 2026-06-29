@@ -326,7 +326,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                     SetDamageFactorsWithoutEffect(0, 4, true);
                     return true;
                 },
-                TimeSpan.FromMilliseconds(5000),
+                TimeSpan.FromMilliseconds(30000),
                 false);
                 break;                
             case "thunderstorm":
