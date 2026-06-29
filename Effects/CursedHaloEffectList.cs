@@ -303,6 +303,9 @@ public static class CursedHaloEffectList
         new("Shaky hands", "forcemouseshake") { Category = NegativeIncentive, Duration = 10,
             Description = "Shake the crosshair.", Price = (uint) (1500 * PRICINGFACTOR )},
 
+        // Mercy
+        new("Mercy", "mercy") { Category = PositiveIncentive, Duration = 20,
+            Description = "Give the player a taste of infinite power. Available only to those struggling", Price = (uint) (100 * PRICINGFACTOR )},
         // Discarded
         //new("Break shield", "shield_break") {Category = Discarded,
         //    Description = "Sets shields to 0. Discarded because it breaks the give/take shield bid wars.", Price = (uint) (* PRICINGFACTOR )},
