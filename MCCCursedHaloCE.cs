@@ -17,6 +17,7 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 
 public partial class MCCCursedHaloCE : InjectEffectPack
 {
+    private string? CachedStreamerName { get; set; } = null;
     private const string ProcessName = "MCC-Win64-Shipping";
 
     [DllImport("user32.dll")]
@@ -103,24 +104,24 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             CcLog.Debug("Can't find script var value");
         }
 
-        CcLog.Debug($"Effect trigger var cave location: " + scriptVarInstantEffectsPointerPointer_ch.Address.ToString("X"));
-        CcLog.Debug($"Gameplay pollling var cave location: " + scriptVarPauseDetection_ch.Address.ToString("X"));
-
+        CcLog.Debug($"Effect trigger var cave location: " + scriptVarInstantEffectsPointerPointer_ch?.Address.ToString("X"));
+        CcLog.Debug($"Gameplay pollling var cave location: " + scriptVarPauseDetection_ch?.Address.ToString("X"));
         CcLog.Debug($"Progress var cave location: " + raceProgressDetection_ch.Address.ToString("X"));
 
-        //if (AreCheatsEnabled("ZePistachio").GetAwaiter().GetResult())
-        //{
-        //    ReportStatus("healthRegen", EffectStatus.MenuHidden);
-        //}
-        //else
-        //{
-        //    ReportStatus("healthRegen", EffectStatus.MenuVisible);
-        //}
+        if (CachedStreamerName != null &&  AreCheatsEnabled("CachedStreamerName").GetAwaiter().GetResult())
+        {
+            ReportStatus("mercy", EffectStatus.MenuVisible);
+        }
+        else
+        {
+            ReportStatus("mercy", EffectStatus.MenuHidden);
+        }
         return base.GetGameState();
     }
 
     private bool IsInGameplayAndPointersAreOk(EffectRequest request)
     {
+        CachedStreamerName = request.Target?.Name ?? "nobody";
         if (!IsInGameplay())
         {
             CcLog.Message("Not in gameplay");
@@ -254,28 +255,41 @@ public partial class MCCCursedHaloCE : InjectEffectPack
 
         switch (code[0])
         {
-            case "fuckyouiwin":
+            case "mercy":
+                TryEffect(request, () => IsReady(),
+                () =>
                 {
-                    RepeatAction(request, () => IsReady(request),
-            () => Connector.SendMessage($"{request.DisplayViewer} {"says you win"}."),
-            TimeSpan.FromSeconds(1),
-            IsInGameplay,
-            TimeSpan.FromMilliseconds(500),
-            () =>
-            {
-                AddShield(request, 99, "boosted");
-                SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
-                //QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
-                //QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
-                //QueueOneShotEffect(request, OneShotEffect.QuadDamage);
-                SetDamageFactors(request, 0, 4, true, "granted you instakills and invulnerability.");
-                return true;
-            },
-            TimeSpan.FromMilliseconds(1000),
-            false,
-            EffectMutex.Ammo);
-                    break;
-                }
+                    AddShield(request, 5, "boosted");
+                    SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
+                    QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
+                    QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                    QueueOneShotEffect(request, OneShotEffect.QuadDamage);
+                    SetDamageFactors(request, 0.1f, 4, true, "granted you super armor and quad damage.");
+                }, () =>
+                {
+                    SetDamageFactors(request, 1f, 1f, false, "removed super armor and quad damage.");
+                });
+                break;
+            case "fuckyouiwin":
+                RepeatAction(request, () => IsReady(request),
+                () => Connector.SendMessage($"{request.DisplayViewer} {"says you win"}."),
+                TimeSpan.FromSeconds(1),
+                IsInGameplay,
+                TimeSpan.FromMilliseconds(500),
+                () =>
+                {
+                    AddShield(request, 99, "boosted");
+                    SetPlayerMovementSpeed(request, 1.4f, "\"put some spring in your step.\"");
+                    QueueOneShotEffect(request, OneShotEffect.OneShotOneKill);
+                    QueueOneShotEffect(request, OneShotEffect.TrulyInfiniteAmmo);
+                    QueueOneShotEffect(request, OneShotEffect.QuadDamage);
+                    SetDamageFactors(request, 0, 4, true, "granted you super armor and quad damage.");
+                    return true;
+                },
+                TimeSpan.FromMilliseconds(1000),
+                false,
+                EffectMutex.Ammo);
+                break;                
             case "thunderstorm":
                 {
                     TryEffect(request, () => IsReady(request),
