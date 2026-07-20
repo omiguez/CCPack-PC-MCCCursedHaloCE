@@ -65,7 +65,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         this.keyManager.hidConnector = hidConnector;
         InitIntegrityControl();
         InitializeOneShotEffectQueueing();
-        //StartProgressTrackerThread();
+        StartProgressTrackerThread();
     }
 
     private void DeinitGame()
@@ -98,7 +98,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         if (TryGetIndirectByteArray(raceProgressDetection_ch, 0, 4, out byte[] scriptVarBytes))
         {
             int scriptVarValue = BitConverter.ToInt32(scriptVarBytes, 0);
-            CcLog.Message("Race progress var value is " + scriptVarValue);
+            CcLog.Debug("Race progress var value is " + scriptVarValue);
         }
         else
         {
@@ -134,7 +134,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     {
         if (!IsInGameplay())
         {
-            CcLog.Message("Not in gameplay");
+            CcLog.Debug("Not in gameplay");
 
             return false;
         }
@@ -640,52 +640,18 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     private void StartProgressTrackerThread()
     {
         CcLog.Message("Cursed Halo For Charity - Race Progress Reporter");
-
-        // Define the default path for the configuration file.
-        string? configPath = "config.toml";
-
-        // If the config file doesn't exist at the default path, ask the user to find it.
-        if (!File.Exists(configPath))
-        {
-
-            while (!File.Exists(configPath))
-            {
-                CcLog.Message($"Error: Configuration file not found at '{Path.GetFullPath(configPath)}'.");
-                configPath = "%appdata%/CrowdControl-Apps/HaloCE/config.json";
-
-                if (string.IsNullOrEmpty(configPath))
-                {
-                    Thread.Sleep(5000);
-                    continue;
-                }
-                CcLog.Message($"Successfully loaded config from: {configPath}");
-            }
-        }
-
+        string fileName = "YourHaloRaceId.txt";
+        string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), fileName);
         try
         {
-            // Read the TOML file content.
-            string tomlContent = File.ReadAllText(configPath);
-            BadToml tomlTable = BadToml.Parse(tomlContent);
 
-            string username = tomlTable["username"];
-            string password = tomlTable["password"];
 
-            // Check if deserialization was successful
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-            {
-                throw new Exception("Username and password are required. Please check toml file.");
-            }
+            // Create the RaceProgress instance
+            var raceProgress = new RaceProgress(this);
 
-            // Create the RaceProgress instance, passing the credentials to the new constructor.
-            var raceProgress = new RaceProgress(username, password, this);
-
-            // Start the monitoring process. This will run in a background thread.
+            // Start the monitoring process. This will run in a background thread, and do nothing if the file is not found. It will keep checking for the file every 10 seconds.
             Thread thread = new Thread(() => raceProgress.StartMonitoring());
             thread.Start();
-
-            // Keep the main application running.
-            CcLog.Message("Monitoring started. The application will continue running in the background.");
         }
         catch (Exception ex)
         {

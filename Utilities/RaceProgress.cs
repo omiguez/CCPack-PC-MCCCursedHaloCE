@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Net.Http;
 using CcLog = CrowdControl.Common.Log;
 
 namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
@@ -9,8 +10,8 @@ namespace CrowdControl.Games.Packs.MCCCursedHaloCE;
 /// </summary>
 internal class RaceProgress
 {
-   private readonly string _username;
-    private readonly string _password;
+    private string? _username = null;
+    private string? _password = null;
     private readonly MCCCursedHaloCE _mccCursedHaloCe;
 
     private readonly HttpClient _httpClient;
@@ -19,20 +20,18 @@ internal class RaceProgress
     /// <summary>
     /// Initializes a new instance of the RaceProgress class.
     /// </summary>
-    public RaceProgress(string username, string password, MCCCursedHaloCE mccCursedHaloCe)
+    public RaceProgress(MCCCursedHaloCE mccCursedHaloCe)
     {
-        _username = username;
-        _password = password;
         _mccCursedHaloCe = mccCursedHaloCe;
         _httpClient = new HttpClient();
-    }
+    }    
 
     /// <summary>
     /// Starts the monitoring process in a new background thread.
     /// </summary>
     public void StartMonitoring()
     {
-        CcLog.Message($"Starting monitoring for racer: {_username}...");
+        CcLog.Message($"Starting monitoring for racer");
         Task loopTask = Task.Run(MonitorLoop);
         CcLog.Message("Monitoring started. The application will continue running in the background.");
         loopTask.Wait();
@@ -42,32 +41,60 @@ internal class RaceProgress
     /// The main loop that periodically checks for progress and reports it.
     /// </summary>
     private async Task MonitorLoop() {
-        byte[]? initialStatus;
-        while (!_mccCursedHaloCe.GetRaceStatus(out initialStatus) || initialStatus == null) {
-            Thread.Sleep(1000);
+        WaitUntilFileDataIsLoaded();
+        byte[]? initialStatus = null;
+        try
+        {
+            while (!_mccCursedHaloCe.GetRaceStatus(out initialStatus) || initialStatus == null)
+            {
+                Thread.Sleep(1000);
+            }
         }
-        
+        catch (Exception ex)
+        {
+            CcLog.Error($"Something went wrong getting the race progress variable: {ex.Message}");
+        }
+
+        if (initialStatus == null)
+        {
+            CcLog.Error("Error reading the progress varaible, byte array is null");
+            return;
+        }
+
         int lastLevel = initialStatus[1];
-        int lastStage = initialStatus[2];
+        int lastStage = initialStatus[0];
         while (true)
         {
             try
             {
                 if (!_mccCursedHaloCe.GetRaceStatus(out byte[]? status) || status == null)
                     continue;
-               
+                               
                 int currentLevel = status[1];
-                int currentStage = status[2];
-                
-                if (currentLevel == lastLevel && currentStage == lastStage)
+                int currentStage = status[0];
+
+                // The memory briefly zeroes during loading, so we need to ignore that case. Also, if the level and stage are the same as last time, we don't need to report it again.
+                if ((currentLevel == 0 && currentStage == 0) || (currentLevel == lastLevel && currentStage == lastStage))
+                {
+                    CcLog.Debug($"No progress detected");
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
                     continue;
 
+                }                   
                 CcLog.Message($"Detected progress: Level {currentLevel}, Stage {currentStage}. Reporting to server...");
                 lastLevel = currentLevel;
                 lastStage = currentStage;
 
-                // Report the progress to the web server
-                await SetLevel(currentLevel, currentStage);
+                // Sanity check
+                if (currentLevel >= 0 && currentLevel < 20 && currentStage >= 0 && currentStage < 10)
+                {
+                    // Report the progress to the web server
+                    await SetLevel(currentLevel, currentStage);
+                }
+                else
+                {
+                    CcLog.Message($"Invalid level/stage detected: Level {currentLevel}, Stage {currentStage}. Skipping report.");
+                }
             }
             catch (Exception ex)
             {
@@ -77,6 +104,57 @@ internal class RaceProgress
             // Wait for a specified interval before checking again to avoid spamming the server.
             Thread.Sleep(TimeSpan.FromSeconds(30));
         }
+    }
+
+    private void WaitUntilFileDataIsLoaded()
+    {
+        while (!IsFileDataLoaded())
+        {
+            if (!TryGetFileData())
+            {
+                CcLog.Message("Failed to load racer configuration. Monitoring will not start.");
+                Thread.Sleep(10000);
+            }
+            else
+            {
+                CcLog.Message($"Racer configuration loaded successfully. Welcome, {_username}!");
+                return;
+            }
+        }
+    }
+
+    private bool IsFileDataLoaded()
+    {
+        return _username != null;
+    }
+
+    private bool TryGetFileData()
+    {
+        string fileName = "YourHaloRaceId.txt";
+        string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), fileName);
+
+        if (!File.Exists(configPath))
+        {
+            CcLog.Message($"Error: Racer configuration file not found at '{Path.GetFullPath(configPath)}'.");
+            return false;
+
+        }
+
+        CcLog.Message($"Successfully loaded racer config from: {configPath}");
+
+        // Verify the file
+        var fileContents = File.ReadAllLines(configPath).Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
+        if (fileContents.Count != 2)
+        {
+            CcLog.Message("Bad format for racer config file. Expected 2 lines (username and password).");
+            return false;
+        }
+
+        _username = fileContents[0];
+        _password = fileContents[1];
+
+        return true;
+
     }
 
     /// <summary>
@@ -109,23 +187,4 @@ internal class RaceProgress
             CcLog.Message($"Error making the GET request: {e.Message}");
         }
     }
-
-    #region Placeholder Methods
-    // These methods are placeholders. You should replace their logic with
-    // how you actually determine the racer's progress.
-
-    private int GetCurrentLevelFromGame()
-    {
-        // Example: read from a game file, memory, etc.
-        // Returning a random number for demonstration purposes.
-        return new Random().Next(1, 10);
-    }
-
-    private int GetCurrentStageFromGame()
-    {
-        // Example: read from a game file, memory, etc.
-        // Returning a random number for demonstration purposes.
-        return new Random().Next(1, 5);
-    }
-    #endregion
 }

@@ -16,7 +16,12 @@ public partial class MCCCursedHaloCE
     private AddressChain? raceProgressDetection_ch = null;
 
     public bool GetRaceStatus(out byte[]? bytes) {
-        return raceProgressDetection_ch.TryGetBytes(2, out bytes);
+        if (raceProgressDetection_ch == null)
+        {
+            bytes = null;
+            return false;
+        }
+        return TryGetIndirectByteArray(raceProgressDetection_ch, 0, 4, out bytes);
     }
 
     // Continuous script variables use bits in a script variable to be activated. Hence there's a max after which we need to use another variable.
