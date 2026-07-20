@@ -304,10 +304,10 @@ public static class CursedHaloEffectList
             Description = "Shake the crosshair.", Price = (uint) (1500 * PRICINGFACTOR )},
 
         // Mercy
-        new("Boost", "mercy") { Category = PositiveIncentive, Duration = 20,
-            Description = "Give the player a taste of power. Available only to those struggling", Price = (uint) (100 * PRICINGFACTOR )},
-        new("Boost+", "bettermercy") { Category = PositiveIncentive, Duration = 20,
-            Description = "Give the player a taste of infinite power. Available only to those struggling", Price = (uint) (500 * PRICINGFACTOR )},
+        new("Easy mode", "mercy") { Category = PositiveIncentive, Duration = 20,
+            Description = "Deal 4x damage, receive half, infinite ammo, fast run. Available only to those struggling", Price = (uint) (100 * PRICINGFACTOR )},
+        new("Easier mode", "bettermercy") { Category = PositiveIncentive, Duration = 20,
+            Description = "One shot one kill, take 10% damage, infinite ammo, fast run. Available only to those struggling", Price = (uint) (500 * PRICINGFACTOR )},
         // Discarded
         //new("Break shield", "shield_break") {Category = Discarded,
         //    Description = "Sets shields to 0. Discarded because it breaks the give/take shield bid wars.", Price = (uint) (* PRICINGFACTOR )},
