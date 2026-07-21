@@ -12,6 +12,7 @@ internal class RaceProgress
 {
     private string? _username = null;
     private string? _password = null;
+    private bool _firstTimePositionDetected = true;
     private readonly MCCCursedHaloCE _mccCursedHaloCe;
 
     private readonly HttpClient _httpClient;
@@ -74,7 +75,7 @@ internal class RaceProgress
                 int currentStage = status[0];
 
                 // The memory briefly zeroes during loading, so we need to ignore that case. Also, if the level and stage are the same as last time, we don't need to report it again.
-                if ((currentLevel == 0 && currentStage == 0) || (currentLevel == lastLevel && currentStage == lastStage))
+                if ((currentLevel == 0 && currentStage == 0) || (currentLevel == lastLevel && currentStage == lastStage && !_firstTimePositionDetected))
                 {
                     CcLog.Debug($"No progress detected");
                     Thread.Sleep(TimeSpan.FromSeconds(5));
@@ -89,6 +90,7 @@ internal class RaceProgress
                 if (currentLevel >= 0 && currentLevel < 20 && currentStage >= 0 && currentStage < 10)
                 {
                     // Report the progress to the web server
+                    _firstTimePositionDetected = false;
                     await SetLevel(currentLevel, currentStage);
                 }
                 else
