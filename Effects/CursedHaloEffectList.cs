@@ -174,7 +174,7 @@ public static class CursedHaloEffectList
         // Damage related
         new("Quad damage", "enemyreceiveddamage_quad") { Category = PositiveIncentive, Duration = 20,
             Description = "Enemies receive 4 times the damage.", Price = (uint) (1000 * PRICINGFACTOR )},
-        new("Spartan medicine", "enemyreceiveddamage_reversed") { Category = NeutralIncentive, Duration = 20,
+        new("Healing bullets", "enemyreceiveddamage_reversed") { Category = NeutralIncentive, Duration = 20,
             Description = "Damage HEALS non-players, without a max health cap.", Price = (uint) (1200 * PRICINGFACTOR )},
         new("Plot armor", "playerreceiveddamage_invulnerable") { Category = PositiveIncentive, Duration = 20,
             Description = "I'll have you know that I've become indestructible, determination that is incorruptible!", Price = (uint) (2000 * PRICINGFACTOR )},
