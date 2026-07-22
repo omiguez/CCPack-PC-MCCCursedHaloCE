@@ -20,6 +20,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
     private string? CachedStreamerName { get; set; } = null;
     private bool cheatsEnabled = false;
     private const string ProcessName = "MCC-Win64-Shipping";
+    private CancellationTokenSource progressTrackerCancellationTokenSource = new CancellationTokenSource();
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -65,13 +66,14 @@ public partial class MCCCursedHaloCE : InjectEffectPack
         this.keyManager.hidConnector = hidConnector;
         InitIntegrityControl();
         InitializeOneShotEffectQueueing();
-        StartProgressTrackerThread();
+        StartProgressTrackerThread(progressTrackerCancellationTokenSource.Token);
     }
 
     private void DeinitGame()
     {
         CcLog.Message("DEINIT");
         AbortAllInjection(true);
+        progressTrackerCancellationTokenSource.Cancel(true);
     }
 
     /// <summary>
@@ -637,7 +639,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
                 break;
         }
     }
-    private void StartProgressTrackerThread()
+    private void StartProgressTrackerThread(CancellationToken cancellationToken)
     {
         CcLog.Message("Cursed Halo For Charity - Race Progress Reporter");
         string fileName = "YourHaloRaceId.txt";
@@ -650,7 +652,7 @@ public partial class MCCCursedHaloCE : InjectEffectPack
             var raceProgress = new RaceProgress(this);
 
             // Start the monitoring process. This will run in a background thread, and do nothing if the file is not found. It will keep checking for the file every 10 seconds.
-            Thread thread = new Thread(() => raceProgress.StartMonitoring());
+            Thread thread = new Thread(() => raceProgress.StartMonitoring(cancellationToken));
             thread.Start();
         }
         catch (Exception ex)

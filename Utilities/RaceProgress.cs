@@ -17,6 +17,7 @@ internal class RaceProgress
 
     private readonly HttpClient _httpClient;
     private const string ApiBaseUrl = "https://cursedhaloforcharity.com/Race/";
+    private CancellationToken _cancellationToken;
 
     /// <summary>
     /// Initializes a new instance of the RaceProgress class.
@@ -30,8 +31,9 @@ internal class RaceProgress
     /// <summary>
     /// Starts the monitoring process in a new background thread.
     /// </summary>
-    public void StartMonitoring()
+    public void StartMonitoring(CancellationToken cancellationToken)
     {
+        _cancellationToken = cancellationToken;
         CcLog.Message($"Starting monitoring for racer");
         Task loopTask = Task.Run(MonitorLoop);
         CcLog.Message("Monitoring started. The application will continue running in the background.");
@@ -48,6 +50,11 @@ internal class RaceProgress
         {
             while (!_mccCursedHaloCe.GetRaceStatus(out initialStatus) || initialStatus == null)
             {
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    CcLog.Message("Cancellation requested. Exiting monitoring loop.");
+                    return;
+                }
                 Thread.Sleep(1000);
             }
         }
@@ -68,6 +75,11 @@ internal class RaceProgress
         {
             try
             {
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    CcLog.Message("Cancellation requested. Exiting monitoring loop.");
+                    return;
+                }
                 if (!_mccCursedHaloCe.GetRaceStatus(out byte[]? status) || status == null)
                     continue;
                                
@@ -110,7 +122,7 @@ internal class RaceProgress
 
     private void WaitUntilFileDataIsLoaded()
     {
-        while (!IsFileDataLoaded())
+        while (!IsFileDataLoaded() && !_cancellationToken.IsCancellationRequested)
         {
             if (!TryGetFileData())
             {
